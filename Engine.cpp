@@ -203,7 +203,7 @@ void Engine::updateFrontierBFS() {
 		Node currentNode = this->frontier.front();
 
 		for (int idx : doneNodes) {
-			if (idx == currentNode.index) {
+			if (idx == currentNode.index || idx == this->targetIDX) {
 				found = true;
 				break;
 			}
