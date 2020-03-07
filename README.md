@@ -5,7 +5,7 @@ Many updates will occur in the upcoming week.
 <br>
 More details soon.
 
-**This code will be refactored and modified in many ways. Comments are going to be added once everything is working properly. Many changes will occur in the upcoming week.**
+**This code will be refactored and modified in many ways. A* has not yet been implemented, as I'm working my way up from Breadth First Search. Comments are going to be added once everything is working properly. Many changes will occur in the upcoming week.**
 # Usage
 
 P = Start/Pause/Resume the path finding.
