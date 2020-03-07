@@ -10,7 +10,7 @@ More details soon.
 
 P = Start/Pause/Resume the path finding.
 <br>
-S = Enables the selection of the starting tile. When toggled on, the tile you select will be set as the starting point. (Only one tile can be the starting point. If selecting another tile while a start point was already set, the starting point will be replaced with the new one.)
+S = Enables the selection of the starting tile. When toggled on, the tile you select will be set as the starting point. (Only one tile can be the starting point. If selecting another tile while a start point was already set, the previous starting point will be replaced with the new one.)
 <br>
 T = Same thing as the "S" key, except it selects the target point.
 <br>
