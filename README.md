@@ -8,6 +8,13 @@ More details soon.
 **This code will be refactored and modified in many ways. The AStar algorithm has not yet been implemented, as I'm working my way up from Breadth First Search. Comments are going to be added once everything is working properly. Many changes will occur in the upcoming week.**
 # Usage
 
+1. Green tiles are "passable", which means the algorithm will look for those when finding the path.
+2. Red tiles are "impassable", which means the algorithm will ignore those when finding the path.
+3. Yellow tile is the starting point, from where the algorithm will start to look for the path.
+4. Blue tile is the target point, the goal, which the algorithm will find the path for.
+5. Purple tile means that the tile is a possible path and/or has been visited by the algorithm.
+<br>
+
 ## Keymap
 
 | Key | Function |
@@ -18,12 +25,6 @@ More details soon.
 |  R  | Resets the tiles. |
 |  V  | Toggles view-only mode, where you can't modify the grid/tiles. Enabled by default when starting the path finding (by pressing "P"). Disabled once you reset the grid (by pressing "R"). You can manually toggle it by pressing "V". |
 
-1. Green tiles are "passable", which means the algorithm will look for those when finding the path.
-2. Red tiles are "impassable", which means the algorithm will ignore those when finding the path.
-3. Yellow tile is the starting point, from where the algorithm will start to look for the path.
-4. Blue tile is the target point, the goal, which the algorithm will find the path for.
-5. Purple tile means that the tile is a possible path and/or has been visited by the algorithm.
-<br>
 
 If you want, you can change the colors in the "Node.h" file. The tile colors are stored in the following variables, respectively: "passable", "impassable", "start", "target", "visited".
 <br>
