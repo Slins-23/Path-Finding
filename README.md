@@ -8,7 +8,7 @@ More details soon.
 **This code will be refactored and modified in many ways. Comments are going to be added once everything is working properly. Many changes will occur in the upcoming week.**
 # Usage
 
-P = Starts/Pauses the path finding.
+P = Start/Pause/Resume the path finding.
 <br>
 S = Enables the selection of the starting tile. When selected, you should click in a tile to make it the tarting point.
 <br>
