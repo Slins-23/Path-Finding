@@ -8,15 +8,15 @@ More details soon.
 **This code will be refactored and modified in many ways. The AStar algorithm has not yet been implemented, as I'm working my way up from Breadth First Search. Comments are going to be added once everything is working properly. Many changes will occur in the upcoming week.**
 # Usage
 
-P = Start/Pause/Resume the path finding.
-<br>
-S = Enables the selection of the starting tile. When toggled on, the tile you select will be set as the starting point. (Only one tile can be the starting point. If selecting another tile while a start point was already set, the previous starting point will be replaced with the new one.)
-<br>
-T = Same thing as the "S" key, except it selects the target point.
-<br>
-R = Resets the tiles.
-<br>
-V = Toggles view-only mode, where you can't modify the grid/tiles. Enabled by default when starting the path finding (by pressing "P"). Disabled once you reset the grid (by pressing "R"). You can manually toggle it by pressing "V".
+## Keymap
+
+| Key | Function |
+|-----|----------|
+|  P  | Start/Pause/Resume the path finding. |
+|  S  | Enables the selection of the starting tile. When toggled on, the tile you select will be set as the starting point. (Only one tile can be the starting point. If selecting another tile while a start point was already set, the previous starting point will be replaced with the new one.) |
+|  T  | Same thing as the "S" key, except it selects the target point. |
+|  R  | Resets the tiles. |
+|  V  | Toggles view-only mode, where you can't modify the grid/tiles. Enabled by default when starting the path finding (by pressing "P"). Disabled once you reset the grid (by pressing "R"). You can manually toggle it by pressing "V". |
 
 1. Green tiles are "passable", which means the algorithm will look for those when finding the path.
 2. Red tiles are "impassable", which means the algorithm will ignore those when finding the path.
