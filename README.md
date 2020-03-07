@@ -18,15 +18,15 @@ R = Resets the tiles.
 <br>
 V = Toggles view-only mode, where you can't modify the grid/tiles. Enabled by default when starting the path finding (by pressing "P"). Disabled once you reset the grid (by pressing "R"). You can manually toggle it by pressing "V".
 
-*Green tiles are "passable", which means the algorithm will look for those when finding the path.
+- Green tiles are "passable", which means the algorithm will look for those when finding the path.
 <br>
-Red tiles are "impassable", which means the algorithm will ignore those when finding the path.
+- Red tiles are "impassable", which means the algorithm will ignore those when finding the path.
 <br>
-Yellow tile is the starting point, from where the algorithm will start to look for the path.
+- Yellow tile is the starting point, from where the algorithm will start to look for the path.
 <br>
-Blue tile is the target point, the goal, which the algorithm will find the path for.
+- Blue tile is the target point, the goal, which the algorithm will find the path for.
 <br>
-Purple tile means that the tile is a possible path and/or has been visited by the algorithm.
+- Purple tile means that the tile is a possible path and/or has been visited by the algorithm.
 <br>
 
 If you want, you can change the colors in the "Node.h" file. The tile colors are stored in the following variables, respectively: "passable", "impassable", "start", "target", "visited".
