@@ -24,7 +24,7 @@ Red tiles are "impassable", which means the algorithm will ignore those when fin
 <br>
 Yellow tile is the starting point, from where the algorithm will start to look for the path.
 <br>
-Blue tile is the target point, where the algorithm considers the end, and tries to find the most optimal path for.
+Blue tile is the target point, the goal, which the algorithm will find the path for.
 <br>
 Purple tile means that the tile is a possible path and/or has been visited by the algorithm.
 <br>
