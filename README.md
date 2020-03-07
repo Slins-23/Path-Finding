@@ -19,13 +19,9 @@ R = Resets the tiles.
 V = Toggles view-only mode, where you can't modify the grid/tiles. Enabled by default when starting the path finding (by pressing "P"). Disabled once you reset the grid (by pressing "R"). You can manually toggle it by pressing "V".
 
 1. Green tiles are "passable", which means the algorithm will look for those when finding the path.
-<br>
 2. Red tiles are "impassable", which means the algorithm will ignore those when finding the path.
-<br>
 3. Yellow tile is the starting point, from where the algorithm will start to look for the path.
-<br>
 4. Blue tile is the target point, the goal, which the algorithm will find the path for.
-<br>
 5. Purple tile means that the tile is a possible path and/or has been visited by the algorithm.
 <br>
 
