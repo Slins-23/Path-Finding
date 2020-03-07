@@ -5,6 +5,11 @@ Many updates will occur in the upcoming week.
 <br>
 More details soon.
 
+If you want, you can change the colors in the "Node.h" file. The tile colors are stored in the following variables, respectively: "passable", "impassable", "start", "target", "visited".
+<br>
+<br>
+Each of the values in the "Uint8" array is in the range of 0-255 or 0x00-0xFF. They are, respectively, Red, Green, Blue and Alpha values.
+
 **This code will be refactored and modified in many ways. The AStar algorithm has not yet been implemented, as I'm working my way up from Breadth First Search. Comments are going to be added once everything is working properly. Many changes will occur in the upcoming week.**
 # Usage
 
@@ -24,12 +29,6 @@ More details soon.
 |  T  | Same thing as the "S" key, except it selects the target point. |
 |  R  | Resets the tiles. |
 |  V  | Toggles view-only mode, where you can't modify the grid/tiles. Enabled by default when starting the path finding (by pressing "P"). Disabled once you reset the grid (by pressing "R"). You can manually toggle it by pressing "V". |
-
-
-If you want, you can change the colors in the "Node.h" file. The tile colors are stored in the following variables, respectively: "passable", "impassable", "start", "target", "visited".
-<br>
-<br>
-Each of the values in the "Uint8" array is in the range of 0-255 or 0x00-0xFF. They are, respectively, Red, Green, Blue and Alpha values.
 
 # Compilation
 
