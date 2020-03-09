@@ -52,6 +52,10 @@ public:
 
 	std::set<std::pair<double, int>> frontierPQ;
 
+	std::set<std::pair<int, int>> frontierGBFS;
+
+	std::set<std::pair<int, int>> frontierAStar;
+
 	int nodesPerRowIDX = (int) (this->WIN_W / 40 - 1);
 	int nodesPerColIDX = (int) (this->WIN_H / 40 - 1);
 
@@ -70,8 +74,11 @@ public:
 	void updateGrid();
 	void handleNodes(int mouseX, int mouseY, int newX, int newY);
 	void play();
+	int heuristic(Node a, Node b);
 	void computePathBFS();
+	void computePathGBFS();
 	void computePathDijkstra();
+	void computePathAStar();
 	void updateFrontier();
 	void resolvePath();
 	void setPath();

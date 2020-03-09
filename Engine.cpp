@@ -214,16 +214,24 @@ void Engine::play() {
 	this->nodes.at(this->startIDX).setColors("start");
 
 	if (this->costMode) {
-		this->frontierPQ.clear();
+		//this->frontierPQ.clear();
+		//this->nodes.at(this->startIDX).cost_so_far = 0;
+		//this->frontierPQ.insert(std::make_pair(0, this->startIDX));
+		this->frontierAStar.clear();
 		this->nodes.at(this->startIDX).cost_so_far = 0;
-		this->frontierPQ.insert(std::make_pair(0, this->startIDX));
+		this->frontierAStar.insert(std::make_pair(0, this->startIDX));
 	}
 	else if (!this->costMode) {
-		this->frontier.push(this->nodes.at(this->startIDX));
+		//this->frontier.push(this->nodes.at(this->startIDX));
+		this->frontierGBFS.insert(std::make_pair(0, this->startIDX));
 	}
 	
 	updateFrontier();
 	setPath();
+}
+
+int Engine::heuristic(Node a, Node b) {
+	return abs(a.getX() - b.getX()) + abs((a.getY() - b.getY()));
 }
 
 void Engine::computePathDijkstra() {
@@ -281,6 +289,86 @@ void Engine::computePathDijkstra() {
 					this->nodes.at(nodeN).cameFrom = nodeIDX;
 
 					this->frontierPQ.insert(std::make_pair(this->nodes.at(nodeN).cost_so_far, nodeN));
+				}
+
+				if (neighbor.getType() == "target") {
+					this->nodes.at(neighbor.index).setType("visited");
+					this->nodes.at(neighbor.index).setColors("target");
+				}
+				else if (neighbor.getType() == "start") {
+					this->nodes.at(neighbor.index).setType("visited");
+					this->nodes.at(neighbor.index).setColors("start");
+				}
+				else {
+					this->nodes.at(neighbor.index).setType("visited");
+				}
+
+
+				clearWindow();
+				updateGrid();
+				updateRenderer();
+			}
+		}
+	}
+}
+
+void Engine::computePathAStar() {
+	while (!this->frontierAStar.empty()) {
+
+		if (this->paused) {
+			break;
+		}
+
+		while (SDL_PollEvent(&this->event)) {
+			switch (event.type) {
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_P:
+					this->paused = true;
+					this->playing = false;
+					break;
+				}
+				break;
+			}
+
+		}
+
+		double cost = this->frontierAStar.begin()->first;
+		int nodeIDX = this->frontierAStar.begin()->second;
+		this->frontierAStar.erase(this->frontierAStar.begin());
+
+
+		if (nodeIDX == this->targetIDX) {
+			this->targetFound = true;
+			break;
+		}
+
+		this->nodes.at(nodeIDX).setType("visited");
+
+		if (this->nodes.at(nodeIDX).getType() == "target") {
+			this->nodes.at(nodeIDX).setColors("target");
+		}
+		else if (this->nodes.at(nodeIDX).getType() == "start") {
+			this->nodes.at(nodeIDX).setColors("start");
+		}
+
+		for (Node neighbor : getNeighbors(this->nodes.at(nodeIDX))) {
+
+			if (neighbor.getType() != "impassable") {
+
+				int nodeN = neighbor.index;
+				double costN = neighbor.cost;
+				double distance = cost + costN;
+
+				if (distance < neighbor.cost_so_far) {
+					this->frontierAStar.erase(std::make_pair(neighbor.cost_so_far, nodeN));
+
+					this->nodes.at(nodeN).cost_so_far = distance;
+					this->nodes.at(nodeN).cameFrom = nodeIDX;
+
+					std::cout << heuristic(this->nodes.at(this->targetIDX), this->nodes.at(nodeN)) << std::endl;
+
+					this->frontierAStar.insert(std::make_pair(distance + heuristic(this->nodes.at(this->targetIDX), this->nodes.at(nodeN)), nodeN));
 				}
 
 				if (neighbor.getType() == "target") {
@@ -366,16 +454,82 @@ void Engine::computePathBFS() {
 	}
 }
 
+void Engine::computePathGBFS() {
+	std::vector<int> doneNodes;
+
+	while (!this->frontierGBFS.empty()) {
+
+		if (this->paused) {
+			break;
+		}
+
+		while (SDL_PollEvent(&this->event)) {
+			switch (event.type) {
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_P:
+					this->paused = true;
+					this->playing = false;
+					break;
+				}
+				break;
+			}
+
+		}
+
+		bool found = false;
+
+		int currentNodeIDX = this->frontierGBFS.begin()->second;
+		this->frontierGBFS.erase(this->frontierGBFS.begin());
+
+		for (int idx : doneNodes) {
+			if (idx == currentNodeIDX || idx == this->targetIDX) {
+				found = true;
+				break;
+			}
+		}
+
+		
+
+		if (!found) {
+			for (Node neighbor : getNeighbors(this->nodes.at(currentNodeIDX))) {
+
+				if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+
+					if (neighbor.getType() == "target") {
+						this->nodes.at(neighbor.index).setType("visited");
+						this->nodes.at(neighbor.index).setColors("target");
+					}
+					else {
+						this->nodes.at(neighbor.index).setType("visited");
+					}
+
+					this->nodes.at(neighbor.index).cameFrom = currentNodeIDX;
+					this->frontierGBFS.insert(std::make_pair(heuristic(this->nodes.at(this->targetIDX), this->nodes.at(neighbor.index)), neighbor.index));
+					clearWindow();
+					updateGrid();
+					updateRenderer();
+				}
+			}
+
+			doneNodes.push_back(currentNodeIDX);
+		}
+	}
+}
+
 void Engine::updateFrontier() {
+
 	if (this->costMode) {
-		computePathDijkstra();
+		//computePathDijkstra();
+		computePathAStar();
 
 		if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
 			resolvePath();
 		}
 	}
 	else if (!this->costMode) {
-		computePathBFS();
+		//computePathBFS();
+		computePathGBFS();
 
 		if (this->frontier.empty() && this->targetIDX != 12345) {
 			resolvePath();
