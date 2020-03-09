@@ -4,17 +4,18 @@ A* not yet implemented, as I'm working my way up from other algorithms.
 The latest implemented algorithm was Dijkstra's.
 
 You can change the color of the tiles at the "Node.h" file, in the "colors" struct.
-The colors, of type "Uint8", can be in the ranges 0-255 and 0x00 - 0xFF.
+The colors, of type "Uint8", can be in the ranges 0-255 and 0x00-0xFF.
 
 For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
 # Usage
 
-There are 4 types of tiles:
+There are 5 types of tiles:
 
 1. "Passable" - Algorithm goes through to find the path.
 2. "Impassable" - Algorithm ignores these tiles.
 3. "Start" - From where the algorithm starts off to find the path. If one has already been set as "start", it will be replaced with the new one.
 4. "Target" - Target for the path to be found. Can only be one tile. If one has already been set as "target", it will be replaced with the new one.
+5. "Visited" - Tiles that the algorithm has already visited.
 
 ## Colors
 
@@ -24,6 +25,7 @@ There are 4 types of tiles:
 | Impassable | Red (255, 0, 0) |
 | Start | Yellow (255, 255, 0) |
 | Target | Blue (0, 255, 255) |
+| Visited | Purple (125, 5, 88) |
 
 ## Keymap
 | Key | Description |
