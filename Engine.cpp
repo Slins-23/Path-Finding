@@ -222,167 +222,165 @@ void Engine::play() {
 		this->frontier.push(this->nodes.at(this->startIDX));
 	}
 	
-	updateFrontierBFS();
+	updateFrontier();
 	setPath();
 }
 
-void Engine::updateFrontierBFS() {
-	std::vector<int> doneNodes;
+void Engine::computePathDijkstra() {
+	while (!this->frontierPQ.empty()) {
 
-	if (this->costMode) {
-		while (!this->frontierPQ.empty()) {
+		if (this->paused) {
+			break;
+		}
 
-			if (this->paused) {
-				break;
-			}
-
-			while (SDL_PollEvent(&this->event)) {
-				switch (event.type) {
-				case SDL_KEYDOWN:
-					switch (event.key.keysym.scancode) {
-					case SDL_SCANCODE_P:
-						this->paused = true;
-						this->playing = false;
-						break;
-					}
+		while (SDL_PollEvent(&this->event)) {
+			switch (event.type) {
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_P:
+					this->paused = true;
+					this->playing = false;
 					break;
 				}
-
-			}
-
-			double cost = this->frontierPQ.begin()->first;
-			int nodeIDX = this->frontierPQ.begin()->second;
-			this->frontierPQ.erase(this->frontierPQ.begin());
-	
-
-			if (nodeIDX == this->targetIDX) {
-				this->targetFound = true;
 				break;
 			}
 
-			this->nodes.at(nodeIDX).setType("visited");
+		}
 
-			if (this->nodes.at(nodeIDX).getType() == "target") {
-				this->nodes.at(nodeIDX).setColors("target");
+		double cost = this->frontierPQ.begin()->first;
+		int nodeIDX = this->frontierPQ.begin()->second;
+		this->frontierPQ.erase(this->frontierPQ.begin());
+
+
+		if (nodeIDX == this->targetIDX) {
+			this->targetFound = true;
+			break;
+		}
+
+		this->nodes.at(nodeIDX).setType("visited");
+
+		if (this->nodes.at(nodeIDX).getType() == "target") {
+			this->nodes.at(nodeIDX).setColors("target");
+		}
+		else if (this->nodes.at(nodeIDX).getType() == "start") {
+			this->nodes.at(nodeIDX).setColors("start");
+		}
+
+		for (Node neighbor : getNeighbors(this->nodes.at(nodeIDX))) {
+
+			if (neighbor.getType() != "impassable") {
+
+				int nodeN = neighbor.index;
+				double costN = neighbor.cost;
+				double distance = cost + costN;
+
+				if (distance < neighbor.cost_so_far) {
+					this->frontierPQ.erase(std::make_pair(neighbor.cost_so_far, nodeN));
+
+					this->nodes.at(nodeN).cost_so_far = distance;
+					this->nodes.at(nodeN).cameFrom = nodeIDX;
+
+					this->frontierPQ.insert(std::make_pair(this->nodes.at(nodeN).cost_so_far, nodeN));
+				}
+
+				if (neighbor.getType() == "target") {
+					this->nodes.at(neighbor.index).setType("visited");
+					this->nodes.at(neighbor.index).setColors("target");
+				}
+				else if (neighbor.getType() == "start") {
+					this->nodes.at(neighbor.index).setType("visited");
+					this->nodes.at(neighbor.index).setColors("start");
+				}
+				else {
+					this->nodes.at(neighbor.index).setType("visited");
+				}
+
+
+				clearWindow();
+				updateGrid();
+				updateRenderer();
 			}
-			else if (this->nodes.at(nodeIDX).getType() == "start") {
-				this->nodes.at(nodeIDX).setColors("start");
+		}
+	}
+}
+
+void Engine::computePathBFS() {
+	std::vector<int> doneNodes;
+
+	while (!this->frontier.empty()) {
+
+		if (this->paused) {
+			break;
+		}
+
+		while (SDL_PollEvent(&this->event)) {
+			switch (event.type) {
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_P:
+					this->paused = true;
+					this->playing = false;
+					break;
+				}
+				break;
 			}
-			
-			for (Node neighbor : getNeighbors(this->nodes.at(nodeIDX))) {
 
-				if (neighbor.getType() != "impassable") {
+		}
 
-					int nodeN = neighbor.index;
-					double costN = neighbor.cost;
-					double distance = cost + costN;
+		bool found = false;
 
-					if (distance < neighbor.cost_so_far) {
-						this->frontierPQ.erase(std::make_pair(neighbor.cost_so_far, nodeN));
+		Node currentNode = this->frontier.front();
 
-						this->nodes.at(nodeN).cost_so_far = distance;
-						this->nodes.at(nodeN).cameFrom = nodeIDX;
+		for (int idx : doneNodes) {
+			if (idx == currentNode.index || idx == this->targetIDX) {
+				found = true;
+				break;
+			}
+		}
 
-						this->frontierPQ.insert(std::make_pair(this->nodes.at(nodeN).cost_so_far, nodeN));
-					}
-					else {
-						std::cout << neighbor.index << std::endl;
-					}
+		if (!found) {
+			for (Node neighbor : getNeighbors(currentNode)) {
+
+				if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
 
 					if (neighbor.getType() == "target") {
 						this->nodes.at(neighbor.index).setType("visited");
 						this->nodes.at(neighbor.index).setColors("target");
 					}
-					else if (neighbor.getType() == "start") {
-						this->nodes.at(neighbor.index).setType("visited");
-						this->nodes.at(neighbor.index).setColors("start");
-					}
 					else {
 						this->nodes.at(neighbor.index).setType("visited");
 					}
 
-
+					this->nodes.at(neighbor.index).cameFrom = currentNode.index;
+					this->frontier.push(this->nodes.at(neighbor.index));
 					clearWindow();
 					updateGrid();
 					updateRenderer();
 				}
 			}
+
+			doneNodes.push_back(currentNode.index);
 		}
 
+		this->frontier.pop();
 	}
-	else if (!this->costMode) {
-		while (!this->frontier.empty()) {
+}
 
-			if (this->paused) {
-				break;
-			}
-
-			while (SDL_PollEvent(&this->event)) {
-				switch (event.type) {
-				case SDL_KEYDOWN:
-					switch (event.key.keysym.scancode) {
-					case SDL_SCANCODE_P:
-						this->paused = true;
-						this->playing = false;
-						break;
-					}
-					break;
-				}
-
-			}
-
-			bool found = false;
-
-			Node currentNode = this->frontier.front();
-
-			for (int idx : doneNodes) {
-				if (idx == currentNode.index || idx == this->targetIDX) {
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
-				for (Node neighbor : getNeighbors(currentNode)) {
-
-					if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
-
-						if (neighbor.getType() == "target") {
-							this->nodes.at(neighbor.index).setType("visited");
-							this->nodes.at(neighbor.index).setColors("target");
-						}
-						else {
-							this->nodes.at(neighbor.index).setType("visited");
-						}
-
-						this->nodes.at(neighbor.index).cameFrom = currentNode.index;
-						this->frontier.push(this->nodes.at(neighbor.index));
-						clearWindow();
-						updateGrid();
-						updateRenderer();
-					}
-				}
-
-				doneNodes.push_back(currentNode.index);
-			}
-
-			this->frontier.pop();
-		}
-	}
-	
+void Engine::updateFrontier() {
 	if (this->costMode) {
-		std::cout << this->frontierPQ.size();
+		computePathDijkstra();
+
 		if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
 			resolvePath();
 		}
 	}
 	else if (!this->costMode) {
+		computePathBFS();
+
 		if (this->frontier.empty() && this->targetIDX != 12345) {
 			resolvePath();
 		}
 	}
-
-
 }
 
 void Engine::resolvePath() {
@@ -406,7 +404,6 @@ void Engine::resolvePath() {
 	else if (this->costMode) {
 		
 		while (target != 0) {
-			std::cout << target << std::endl;
 			path.push_back(target);
 			target = this->nodes.at(target).cameFrom;
 		}

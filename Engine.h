@@ -70,7 +70,9 @@ public:
 	void updateGrid();
 	void handleNodes(int mouseX, int mouseY, int newX, int newY);
 	void play();
-	void updateFrontierBFS();
+	void computePathBFS();
+	void computePathDijkstra();
+	void updateFrontier();
 	void resolvePath();
 	void setPath();
 	void setViewOnly(bool status);
