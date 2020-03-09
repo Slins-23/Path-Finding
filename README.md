@@ -51,4 +51,4 @@ If you want to reset all tiles to "passable" green tiles, you can press the "R" 
 | V | Toggles view-only mode. |
 
 # Compilation
-Compiled in Visual Studio Community 2019, in C++. Using SDL2 and SDL_ttf as external libraries.
+Compiled in Visual Studio Community 2019, in C++. Using SDL2 and SDL_ttf as external libraries. Release version not tested.
