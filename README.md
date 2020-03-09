@@ -5,7 +5,7 @@ The colors, of type "Uint8", can be in the ranges 0-255 and 0x00-0xFF.
 For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
 
 **This is a work-in-progress project. There are going to be many changes in the upcoming week.**<br>
-**A* not yet implemented, as I'm working my way up from other algorithms.**<br>
+**A Star algorithm not yet implemented, as I'm working my way up from other algorithms.**<br>
 **The latest implemented algorithm was Dijkstra's.**<br>
 **There's a lot of redundant code, performance issues, lack of comments, and more.**<br>
 **Those are intended to be fixed once I'm satisfied with the core functionalities.**<br>
