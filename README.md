@@ -3,7 +3,7 @@ This is a work-in-progress project. There are going to be many changes in the up
 A* not yet implemented, as I'm working my way up from other algorithms.
 The latest implemented algorithm was Dijkstra's.
 
-You can change the color for the tiles at the "Node.h" file, in the "colors" struct.
+You can change the color of the tiles at the "Node.h" file, in the "colors" struct.
 The colors, of type "Uint8", can be in the ranges 0-255 and 0x00 - 0xFF.
 
 For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
