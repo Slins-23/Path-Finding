@@ -7,7 +7,7 @@ For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
 **This is a work-in-progress project. There are going to be many changes in the upcoming week.**<br>
 **A Star algorithm not yet implemented, as I'm working my way up from other algorithms.**<br>
 **The latest implemented algorithm was Dijkstra's.**<br>
-**There's a lot of redundant code, performance issues, lack of comments, and more. Those are intended to be fixed once I'm satisfied with the core functionalities.**
+**There's a lot of redundant code, performance issues, lack of comments, documentation, and more. Those are intended to be fixed once I'm satisfied with the core functionalities.**
 # Usage
 
 There are 5 types of tiles:
