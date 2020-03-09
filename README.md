@@ -18,6 +18,17 @@ There are 5 types of tiles:
 4. "Target" - Target for the path to be found. Can only be one tile. If one has already been set as "target", it will be replaced with the new one.
 5. "Visited" - Tiles that the algorithm has already visited.
 
+To start finding a path, you should press the "S" key, to pick a starting tile. Once that's done, do the same with the "T" key, to pick the target tile, which is the tile you want to "go" to.<br>
+You can left-click "passable" tiles to make them "impassable".<br>
+Once you're happy with how the tiles are setup, you can press "P" to start the path finding.
+
+The default algorithm does not account for tile costs.<br> 
+If you want to, you can press the "C" key, to get into the "cost" mode, which currently uses Dijkstra's algorithm.<br>
+
+Once the path has been found, you can make changes and restart the path finding by pressing "P" again. If you want to get rid of the "visited" purple tiles in order to make changes, you can press the "K" key, for better visualization.<br>
+
+If you want to reset all tiles to "passable" green tiles, you can press the "R" key.<br>
+
 ## Colors
 
 | Tile | Color |
