@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include <time.h>
+#include "SDL_ttf.h"
 
 int main(int argc, char* argv[]) {
 	Engine engine = Engine();
@@ -49,12 +50,64 @@ int main(int argc, char* argv[]) {
 					if (event.button.button == SDL_BUTTON_LEFT) {
 						engine.isHeld = true;
 					}
+					else if (event.button.button == SDL_BUTTON_RIGHT) {
+
+						if (engine.costMode) {
+							if (engine.nodes.at(engine.getCurrentNode()).getType() == "passable") {
+
+								if (engine.nodes.at(engine.getCurrentNode()).cost < 4) {
+									engine.nodes.at(engine.getCurrentNode()).cost += 1;
+								}
+								else if (engine.nodes.at(engine.getCurrentNode()).cost == 4) {
+									engine.nodes.at(engine.getCurrentNode()).cost += 1;
+									engine.nodes.at(engine.getCurrentNode()).setType("impassable");
+								}
+
+							}
+						}
+					}
+
 					break;
 				case SDL_MOUSEBUTTONUP:
 					engine.isHeld = false;
 					break;
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.scancode) {
+					case SDL_SCANCODE_K:
+						if (engine.complete) {
+							engine.complete = false;
+							
+							for (int i = 1; i < engine.path.size() - 1; i++) {
+								if (engine.costMode) {
+									double cost = engine.nodes.at(engine.path.at(i)).cost;
+									engine.nodes.at(engine.path.at(i)).setType("passable");
+									engine.nodes.at(engine.path.at(i)).cost = cost;
+								}
+								else {
+									engine.nodes.at(engine.path.at(i)).setType("passable");
+								}
+
+							}
+
+							engine.nodes.at(engine.path.at(0)).setType("target");
+							engine.nodes.at(engine.path.at(engine.path.size() - 1)).setType("start");
+
+							if (engine.costMode) {
+								engine.nodes.at(engine.path.at(0)).cost = 1;
+								engine.nodes.at(engine.path.at(0)).cost_so_far = max_cost;
+
+								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost = 1;
+								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost_so_far = max_cost;
+							}
+
+							engine.reset = false;
+							engine.playing = false;
+							engine.paused = false;
+							engine.targetFound = false;
+						}
+
+						
+						break;
 					case SDL_SCANCODE_P:
 						std::cout << "Started" << std::endl;
 						engine.setViewOnly(true);
@@ -62,6 +115,11 @@ int main(int argc, char* argv[]) {
 						engine.paused = false;
 
 						engine.play();
+
+						engine.playing = false;
+						engine.setViewOnly(false);
+
+						engine.complete = true;
 						break;
 					case SDL_SCANCODE_R:
 						std::cout << "Reset" << std::endl;
@@ -69,23 +127,28 @@ int main(int argc, char* argv[]) {
 						engine.reset = true;
 						engine.playing = false;
 						engine.paused = false;
+						engine.targetFound = false;
 						engine.startIDX = 12345;
 						engine.targetIDX = 12345;
 						break;
 					case SDL_SCANCODE_S:
-						std::cout << "Picked starting node." << std::endl;
+						std::cout << "Select starting node." << std::endl;
 						engine.setViewOnly(false);
 						engine.pickStart = true;
 						engine.pickTarget = false;
 						break;
 					case SDL_SCANCODE_T:
-						std::cout << "Picked target node." << std::endl;
+						std::cout << "Select target node." << std::endl;
 						engine.setViewOnly(false);
 						engine.pickTarget = true;
 						engine.pickStart = false;
 						break;
 					case SDL_SCANCODE_V:
 						engine.setViewOnly(!engine.viewOnly);
+						break;
+					case SDL_SCANCODE_C:
+						engine.setCostMode(!engine.costMode);
+						break;
 					}
 					break;
 				}
@@ -105,15 +168,24 @@ int main(int argc, char* argv[]) {
 							if (!engine.pickStart && !engine.pickTarget) {
 								if (currentType == "impassable" || currentType == "start" || currentType == "target") {
 									engine.nodes.at(engine.getCurrentNode()).setType("passable");
+
+									if (engine.costMode) {
+										engine.nodes.at(engine.getCurrentNode()).cost = 1;
+									}
 								}
 								else if (currentType == "passable") {
 									engine.nodes.at(engine.getCurrentNode()).setType("impassable");
+
+									if (engine.costMode) {
+										engine.nodes.at(engine.getCurrentNode()).cost = 5;
+									}
 								}
 
 								engine.lastNodeChange = engine.getCurrentNode();
 							}
 							else if (engine.pickStart && !engine.pickTarget) {
 								engine.nodes.at(engine.getCurrentNode()).setType("start");
+								engine.nodes.at(engine.getCurrentNode()).cost = 1;
 								engine.pickStart = false;
 
 								if (engine.startIDX != 12345) {
@@ -128,6 +200,7 @@ int main(int argc, char* argv[]) {
 							}
 							else if (!engine.pickStart && engine.pickTarget) {
 								engine.nodes.at(engine.getCurrentNode()).setType("target");
+								engine.nodes.at(engine.getCurrentNode()).cost = 1;
 								engine.pickTarget = false;
 
 								if (engine.targetIDX != 12345) {
@@ -144,7 +217,6 @@ int main(int argc, char* argv[]) {
 					}
 				}
 			
-
 				engine.updateGrid();
 
 				engine.updateRenderer();

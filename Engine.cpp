@@ -46,21 +46,30 @@ int Engine::load() {
 		return 0;
 	}
 
-	this->renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED);
 
 	if (this->renderer == NULL) {
 		std::cout << "Could not initialize SDL Renderer. Error: " << SDL_GetError() << std::endl;
-		SDL_DestroyWindow(window);
+		SDL_DestroyWindow(this->window);
 		return 0;
 	}
 
-	std::cout << "Successfully initialized SDL." << std::endl;
+	if (TTF_Init() == -1) {
+		std::cout << "Could not initialize fonts. Error: " << SDL_GetError() << std::endl;
+		SDL_DestroyWindow(this->window);
+		SDL_DestroyRenderer(this->renderer);
+		return 0;
+	}
+
+	std::cout << "Successfully initialized Engine." << std::endl;
 
 	return 1;
 }
 
 void Engine::close() {
+	TTF_Quit();
 	SDL_DestroyWindow(this->window);
+	SDL_DestroyRenderer(this->renderer);
 	SDL_Quit();
 }
 
@@ -86,10 +95,42 @@ void Engine::drawNode(Node node) {
 
 	SDL_SetRenderDrawColor(this->renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderDrawRect(this->renderer, &rect);
+
+	if (this->costMode && node.cost > 1) {
+
+		SDL_Color color = { 0, 0, 0, 255 };
+
+		std::string str = std::to_string(node.cost);
+
+		str = str[0];
+
+		SDL_Surface* surface = TTF_RenderText_Solid(this->cost_font, str.c_str(), color);
+
+		SDL_Texture* txt = SDL_CreateTextureFromSurface(this->renderer, surface);
+
+		int w;
+		int h;
+
+		SDL_QueryTexture(txt, NULL, NULL, &w, &h);
+
+		SDL_Rect txtRect;
+
+		if (node.cost >= 10) {
+			txtRect = { node.getX() + (w / 6), node.getY() + (h / 8), w, h };
+		}
+		else if (node.cost < 10) {
+			txtRect = { node.getX() + (int) (w / 1.25), node.getY() + (h / 8), w, h };
+		}
+
+		SDL_RenderCopy(this->renderer, txt, NULL, &txtRect);
+
+		SDL_DestroyTexture(txt);
+		SDL_FreeSurface(surface);
+	}
 }
 
 void Engine::updateGrid() {
-	if (!this->loaded || this->reset) {
+	if (!this->loaded || this->reset || this->mode_changed) {
 		this->nodes = std::vector<Node>();
 
 		int idx = 0;
@@ -106,6 +147,7 @@ void Engine::updateGrid() {
 
 		this->loaded = true;
 		this->reset = false;
+		this->mode_changed = false;
 	}
 
 	for (Node node : this->nodes) {
@@ -170,7 +212,16 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 void Engine::play() {
 	this->nodes.at(this->startIDX).setType("visited");
 	this->nodes.at(this->startIDX).setColors("start");
-	this->frontier.push(this->nodes.at(this->startIDX));
+
+	if (this->costMode) {
+		this->frontierPQ.clear();
+		this->nodes.at(this->startIDX).cost_so_far = 0;
+		this->frontierPQ.insert(std::make_pair(0, this->startIDX));
+	}
+	else if (!this->costMode) {
+		this->frontier.push(this->nodes.at(this->startIDX));
+	}
+	
 	updateFrontierBFS();
 	setPath();
 }
@@ -178,82 +229,191 @@ void Engine::play() {
 void Engine::updateFrontierBFS() {
 	std::vector<int> doneNodes;
 
-	while (!this->frontier.empty()) {
+	if (this->costMode) {
+		while (!this->frontierPQ.empty()) {
 
-		if (this->paused) {
-			break;
-		}
+			if (this->paused) {
+				break;
+			}
 
-		while (SDL_PollEvent(&this->event)) {
-			switch (event.type) {
-			case SDL_KEYDOWN:
-				switch (event.key.keysym.scancode) {
+			while (SDL_PollEvent(&this->event)) {
+				switch (event.type) {
+				case SDL_KEYDOWN:
+					switch (event.key.keysym.scancode) {
 					case SDL_SCANCODE_P:
 						this->paused = true;
 						this->playing = false;
 						break;
 					}
+					break;
+				}
+
+			}
+
+			double cost = this->frontierPQ.begin()->first;
+			int nodeIDX = this->frontierPQ.begin()->second;
+			this->frontierPQ.erase(this->frontierPQ.begin());
+	
+
+			if (nodeIDX == this->targetIDX) {
+				this->targetFound = true;
 				break;
 			}
 
-		}
+			this->nodes.at(nodeIDX).setType("visited");
 
-		bool found = false;
-
-		Node currentNode = this->frontier.front();
-
-		for (int idx : doneNodes) {
-			if (idx == currentNode.index || idx == this->targetIDX) {
-				found = true;
-				break;
+			if (this->nodes.at(nodeIDX).getType() == "target") {
+				this->nodes.at(nodeIDX).setColors("target");
 			}
-		}
+			else if (this->nodes.at(nodeIDX).getType() == "start") {
+				this->nodes.at(nodeIDX).setColors("start");
+			}
+			
+			for (Node neighbor : getNeighbors(this->nodes.at(nodeIDX))) {
 
-		if (!found) {
-			for (Node neighbor : getNeighbors(currentNode)) {
+				if (neighbor.getType() != "impassable") {
 
-				if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+					int nodeN = neighbor.index;
+					double costN = neighbor.cost;
+					double distance = cost + costN;
+
+					if (distance < neighbor.cost_so_far) {
+						this->frontierPQ.erase(std::make_pair(neighbor.cost_so_far, nodeN));
+
+						this->nodes.at(nodeN).cost_so_far = distance;
+						this->nodes.at(nodeN).cameFrom = nodeIDX;
+
+						this->frontierPQ.insert(std::make_pair(this->nodes.at(nodeN).cost_so_far, nodeN));
+					}
+					else {
+						std::cout << neighbor.index << std::endl;
+					}
 
 					if (neighbor.getType() == "target") {
 						this->nodes.at(neighbor.index).setType("visited");
 						this->nodes.at(neighbor.index).setColors("target");
 					}
+					else if (neighbor.getType() == "start") {
+						this->nodes.at(neighbor.index).setType("visited");
+						this->nodes.at(neighbor.index).setColors("start");
+					}
 					else {
 						this->nodes.at(neighbor.index).setType("visited");
 					}
-					
-					this->nodes.at(neighbor.index).cameFrom = currentNode.index;
-					this->frontier.push(this->nodes.at(neighbor.index));
+
+
 					clearWindow();
 					updateGrid();
 					updateRenderer();
 				}
 			}
-
-			doneNodes.push_back(currentNode.index);
 		}
 
-		this->frontier.pop();
+	}
+	else if (!this->costMode) {
+		while (!this->frontier.empty()) {
+
+			if (this->paused) {
+				break;
+			}
+
+			while (SDL_PollEvent(&this->event)) {
+				switch (event.type) {
+				case SDL_KEYDOWN:
+					switch (event.key.keysym.scancode) {
+					case SDL_SCANCODE_P:
+						this->paused = true;
+						this->playing = false;
+						break;
+					}
+					break;
+				}
+
+			}
+
+			bool found = false;
+
+			Node currentNode = this->frontier.front();
+
+			for (int idx : doneNodes) {
+				if (idx == currentNode.index || idx == this->targetIDX) {
+					found = true;
+					break;
+				}
+			}
+
+			if (!found) {
+				for (Node neighbor : getNeighbors(currentNode)) {
+
+					if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+
+						if (neighbor.getType() == "target") {
+							this->nodes.at(neighbor.index).setType("visited");
+							this->nodes.at(neighbor.index).setColors("target");
+						}
+						else {
+							this->nodes.at(neighbor.index).setType("visited");
+						}
+
+						this->nodes.at(neighbor.index).cameFrom = currentNode.index;
+						this->frontier.push(this->nodes.at(neighbor.index));
+						clearWindow();
+						updateGrid();
+						updateRenderer();
+					}
+				}
+
+				doneNodes.push_back(currentNode.index);
+			}
+
+			this->frontier.pop();
+		}
+	}
+	
+	if (this->costMode) {
+		std::cout << this->frontierPQ.size();
+		if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
+			resolvePath();
+		}
+	}
+	else if (!this->costMode) {
+		if (this->frontier.empty() && this->targetIDX != 12345) {
+			resolvePath();
+		}
 	}
 
-	if (this->frontier.empty() && this->targetIDX != 12345) {
-		resolvePath();
-	}
+
 }
 
 void Engine::resolvePath() {
+
 	this->path = std::vector<int>();
 
-	Node currentNode = this->nodes.at(this->targetIDX);
+	int target = this->targetIDX;
 
-	while (currentNode.index != this->nodes.at(this->startIDX).index) {
-		this->path.push_back(currentNode.index);
-		currentNode = this->nodes.at(currentNode.cameFrom);
+	Node currentNode = this->nodes.at(target);
+
+	if (!this->costMode) {
+		while (currentNode.index != this->nodes.at(this->startIDX).index) {
+			this->path.push_back(currentNode.index);
+			currentNode = this->nodes.at(currentNode.cameFrom);
+		}
+
+		this->path.push_back(this->startIDX);
+
+		this->complete = true;
+	}
+	else if (this->costMode) {
+		
+		while (target != 0) {
+			std::cout << target << std::endl;
+			path.push_back(target);
+			target = this->nodes.at(target).cameFrom;
+		}
+
+		this->complete = true;
 	}
 
-	this->path.push_back(this->startIDX);	
-
-	this->complete = true;
 }
 
 void Engine::setPath() {
@@ -271,12 +431,26 @@ void Engine::setPath() {
 			}
 
 			if (!isPath) {
-				this->nodes.at(i).setType("passable");
+				if (this->costMode) {
+					double cost = this->nodes.at(i).cost;
+					this->nodes.at(i).setType("passable");
+					this->nodes.at(i).cost = cost;
+				}
+				else {
+					this->nodes.at(i).setType("passable");
+				}
+
+			}
+			else if (isPath && this->startIDX == i) {
+				this->nodes.at(this->startIDX).setType("start");
+			}
+			else if (isPath && this->targetIDX == i) {
+				this->nodes.at(this->targetIDX).setType("target");
 			}
 		}
 	}
 
-	std::cout << "HRRRR";
+	this->targetFound = false;
 }
 
 void Engine::setViewOnly(bool status) {
@@ -289,35 +463,42 @@ void Engine::setViewOnly(bool status) {
 	}
 }
 
+void Engine::setCostMode(bool costMode) {
+	this->mode_changed = true;
+
+	if (costMode) {
+		this->cost_font = TTF_OpenFont("fonts/Lato-Regular.ttf", 25);
+		this->costMode = true;
+	}
+	else if (!costMode) {
+		TTF_CloseFont(this->cost_font);
+		this->costMode = false;
+	}
+}
+
 std::vector<Node> Engine::getNeighbors(Node node) {
 	int nodeIdx = node.index;
 
 	std::vector<Node> neighbors;
 
-	std::cout << "Current Index: " << nodeIdx << std::endl;
-
 	if (nodeIdx > this->nodesPerRowIDX) {
 		Node topNeighbor = this->nodes.at(nodeIdx - (this->nodesPerRowIDX + 1));
 		neighbors.push_back(topNeighbor);
-		std::cout << "Top Neighbor Index: " << topNeighbor.index << std::endl;
 	}
 
 	if (nodeIdx <= this->nodeCountIDX - this->nodesPerRowIDX - 1) {
 		Node bottomNeighbor = this->nodes.at(nodeIdx + this->nodesPerRowIDX + 1);
 		neighbors.push_back(bottomNeighbor);
-		std::cout << "Bottom Neighbor Index: " << bottomNeighbor.index << std::endl;
 	}
 	
 	if (nodeIdx % (this->nodesPerRowIDX + 1) != 0) {
 		Node leftNeighbor = this->nodes.at(nodeIdx - 1);
 		neighbors.push_back(leftNeighbor);
-		std::cout << "Left Neighbor Index: " << leftNeighbor.index << std::endl;
 	}
 
 	if (!(nodeIdx % (this->nodesPerRowIDX + 1) == 19)) {
 		Node rightNeighbor = this->nodes.at(nodeIdx + 1);
 		neighbors.push_back(rightNeighbor);
-		std::cout << "Right Neighbor Index: " << rightNeighbor.index << std::endl;
 	}
 
 	return neighbors;
@@ -339,8 +520,8 @@ SDL_Window& Engine::getWindow() {
 	return *this->window;
 }
 
-SDL_Renderer* Engine::getRenderer() {
-	return this->renderer;
+SDL_Renderer& Engine::getRenderer() {
+	return *this->renderer;
 }
 
 SDL_Event Engine::getEvent() {

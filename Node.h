@@ -1,6 +1,9 @@
 #include <iostream>
+#include <sstream>
 #include <SDL.h>
-#include <SDL_image.h>
+#include "SDL_ttf.h"
+#include <limits>
+#include <set>
 
 struct colors {
 	constexpr static Uint8 passable[4] = { 0x00, 0xFF, 0x00, 0xFF };
@@ -9,6 +12,8 @@ struct colors {
 	constexpr static Uint8 target[4] = { 0x00, 0xFF, 0xFF, 0xFF };
 	constexpr static Uint8 visited[4] = { 125, 5, 88, 255 };
 };
+
+const double max_cost = std::numeric_limits<double>::infinity();
 
 #pragma once
 class Node
@@ -35,6 +40,10 @@ public:
 
 	int index = 1245;
 
+	double cost = 1;
+
+	double cost_so_far = max_cost;
+
 	Node(const char* type, int x, int y);
 	~Node();
 	int getX();
@@ -55,5 +64,17 @@ public:
 	void setGreen(Uint8 green);
 	void setBlue(Uint8 blue);
 	void setAlpha(Uint8 alpha);
+
+	bool operator <(const Node& other) const {
+		return this->cost_so_far < other.cost_so_far;
+	}
+
+	bool operator >(const Node& other) const {
+		return this->cost_so_far > other.cost_so_far;
+	}
+
+	bool operator ==(const Node& other) const {
+		return this->cost_so_far == other.cost_so_far;
+	}
 };
 

@@ -19,6 +19,9 @@ private:
 	int newIndex = 0;
 
 public:
+
+	TTF_Font* cost_font;
+
 	std::vector<Node> nodes;
 	std::vector<int> path;
 
@@ -30,10 +33,15 @@ public:
 	bool pickTarget = false;
 
 	bool viewOnly = false;
+	bool costMode = false;
 
 	bool isHeld = false;
 
 	bool complete = false;
+
+	bool mode_changed = false;
+
+	bool targetFound = false;
 
 	int startIDX = 12345;
 	int targetIDX = 12345;
@@ -41,6 +49,8 @@ public:
 	int lastNodeChange = 12345;
 
 	std::queue<Node> frontier;
+
+	std::set<std::pair<double, int>> frontierPQ;
 
 	int nodesPerRowIDX = (int) (this->WIN_W / 40 - 1);
 	int nodesPerColIDX = (int) (this->WIN_H / 40 - 1);
@@ -64,6 +74,7 @@ public:
 	void resolvePath();
 	void setPath();
 	void setViewOnly(bool status);
+	void setCostMode(bool costMode);
 	std::vector<Node> getNeighbors(Node node);
 
 	int getCurrentNode();
@@ -72,6 +83,6 @@ public:
 
 	const char* getTitle();
 	SDL_Window& getWindow();
-	SDL_Renderer* getRenderer();
+	SDL_Renderer& getRenderer();
 	SDL_Event getEvent();
 };

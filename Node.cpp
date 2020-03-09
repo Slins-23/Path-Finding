@@ -37,12 +37,16 @@ void Node::setType(const char* type) {
 		this->passable = true;
 		this->start = false;
 		this->target = false;
+		this->cost = 1;
+		this->cost_so_far = max_cost;
 		setRed(colors::passable[0]);
 		setGreen(colors::passable[1]);
 		setBlue(colors::passable[2]);
 		setAlpha(colors::passable[3]);
 	}
 	else if (type == "impassable") {
+		this->cost = 5;
+		this->cost_so_far = max_cost;
 		this->passable = false;
 		this->start = false;
 		this->target = false;
