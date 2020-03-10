@@ -327,8 +327,6 @@ void Engine::computePathAStar() {
 
 	while (!this->AStarList.empty() && this->AStarList.front().index != this->targetIDX) {
 
-		std::cout << "hrhrhr";
-
 		if (this->paused) {
 			break;
 		}
@@ -385,9 +383,9 @@ void Engine::computePathAStar() {
 				this->AStarList.push_back(neighbor);
 			}
 
+			float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost + this->nodes.at(currentNode.index).cost; //heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+			//float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost + this->nodes.at(currentNode.index).cost;
 			//float distance = this->nodes.at(currentNode.index).cost_so_far + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 
 			
@@ -405,9 +403,9 @@ void Engine::computePathAStar() {
 
 			}
 
-			//clearWindow();
-			//updateGrid();
-			//updateRenderer();
+			clearWindow();
+			updateGrid();
+			updateRenderer();
 
 		}
 	}
