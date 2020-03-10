@@ -80,6 +80,7 @@ public:
 	void handleNodes(int mouseX, int mouseY, int newX, int newY);
 	void play();
 	double heuristic(Node a, Node b);
+	double distance(Node a, Node b);
 	void computePathBFS();
 	void computePathGBFS();
 	void computePathDijkstra();

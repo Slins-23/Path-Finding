@@ -322,10 +322,15 @@ void Engine::computePathDijkstra() {
 	}
 }
 
+double Engine::distance(Node a, Node b) {
+	//return heuristic(a, b) + 
+	return 0;
+}
+
 void Engine::computePathAStar() {
 	//
 
-	while (!this->AStarList.empty() && this->AStarList.front().index != this->targetIDX) {
+	while (!this->AStarList.empty()) {
 
 		if (this->paused) {
 			break;
@@ -379,13 +384,15 @@ void Engine::computePathAStar() {
 
 		for (Node neighbor : getNeighbors(this->nodes.at(currentNode.index))) {
 
+
 			if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
 				this->AStarList.push_back(neighbor);
 			}
 
-			float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			//float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost + this->nodes.at(currentNode.index).cost;
+			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+			float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost;
+			
 			//float distance = this->nodes.at(currentNode.index).cost_so_far + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 
 			
@@ -400,15 +407,16 @@ void Engine::computePathAStar() {
 				//this->nodes.at(neighbor.index).cost_so_far = distance;
 
 				this->nodes.at(neighbor.index).fGlobalGoal = distance + heuristic(this->nodes.at(neighbor.index), this->nodes.at(this->targetIDX));
-
 			}
 
-			clearWindow();
-			updateGrid();
-			updateRenderer();
+			//clearWindow();
+			//updateGrid();
+			//updateRenderer();
 
 		}
 	}
+
+	std::cout << "done";
 }
 
 void Engine::computePathBFS() {
