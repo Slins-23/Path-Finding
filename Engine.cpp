@@ -210,18 +210,26 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 }
 
 void Engine::play() {
-	this->nodes.at(this->startIDX).setType("visited");
-	this->nodes.at(this->startIDX).setColors("start");
+
 
 	if (this->costMode) {
-		//this->frontierPQ.clear();
-		//this->nodes.at(this->startIDX).cost_so_far = 0;
-		//this->frontierPQ.insert(std::make_pair(0, this->startIDX));
-		this->frontierAStar.clear();
-		this->nodes.at(this->startIDX).cost_so_far = 0;
-		this->frontierAStar.insert(std::make_pair(0, this->startIDX));
+		if (this->useAStar) {
+			this->nodes.at(this->startIDX).fLocalGoal = 0.0f;
+			this->nodes.at(this->startIDX).fGlobalGoal = heuristic(this->nodes.at(this->startIDX), this->nodes.at(this->targetIDX));
+			this->AStarList.clear();
+			this->AStarList.push_back(this->nodes.at(this->startIDX));
+		}
+		else if (!this->useAStar) {
+			this->frontierPQ.clear();
+			this->nodes.at(this->startIDX).cost_so_far = 0;
+			this->frontierPQ.insert(std::make_pair(0, this->startIDX));
+		}
+
+
 	}
 	else if (!this->costMode) {
+		//this->nodes.at(this->startIDX).setType("visited");
+		//this->nodes.at(this->startIDX).setColors("start");
 		//this->frontier.push(this->nodes.at(this->startIDX));
 		this->frontierGBFS.insert(std::make_pair(0, this->startIDX));
 	}
@@ -230,8 +238,10 @@ void Engine::play() {
 	setPath();
 }
 
-int Engine::heuristic(Node a, Node b) {
-	return abs(a.getX() - b.getX()) + abs((a.getY() - b.getY()));
+double Engine::heuristic(Node a, Node b) {
+	//return abs(a.getX() - b.getX()) + abs((a.getY() - b.getY()));
+	
+	return sqrtf((a.getX() - b.getX()) * (a.getX() - b.getX()) + (a.getY() - b.getY()) * (a.getY() - b.getY()));
 }
 
 void Engine::computePathDijkstra() {
@@ -304,16 +314,20 @@ void Engine::computePathDijkstra() {
 				}
 
 
-				clearWindow();
-				updateGrid();
-				updateRenderer();
+				//clearWindow();
+				//updateGrid();
+				//updateRenderer();
 			}
 		}
 	}
 }
 
 void Engine::computePathAStar() {
-	while (!this->frontierAStar.empty()) {
+	//
+
+	while (!this->AStarList.empty() && this->AStarList.front().index != this->targetIDX) {
+
+		std::cout << "hrhrhr";
 
 		if (this->paused) {
 			break;
@@ -333,61 +347,68 @@ void Engine::computePathAStar() {
 
 		}
 
-		double cost = this->frontierAStar.begin()->first;
-		int nodeIDX = this->frontierAStar.begin()->second;
-		this->frontierAStar.erase(this->frontierAStar.begin());
+		//this->AStarList.sort([](const Node a, const Node b) { return a.fGlobalGoal < b.fGlobalGoal; });
+		this->AStarList.sort([](const Node a, const Node b) { return a.fGlobalGoal < b.fGlobalGoal;  });
 
+		if (!this->AStarList.empty() && this->nodes.at(this->AStarList.front().index).getType() == "visited") {
+			this->AStarList.pop_front();
+		}
 
-		if (nodeIDX == this->targetIDX) {
-			this->targetFound = true;
+		if (this->AStarList.empty()) {
 			break;
 		}
 
-		this->nodes.at(nodeIDX).setType("visited");
+		Node currentNode = this->AStarList.front();
 
-		if (this->nodes.at(nodeIDX).getType() == "target") {
-			this->nodes.at(nodeIDX).setColors("target");
+		if (this->nodes.at(currentNode.index).getType() == "impassable") {
+			continue;
 		}
-		else if (this->nodes.at(nodeIDX).getType() == "start") {
-			this->nodes.at(nodeIDX).setColors("start");
-		}
-
-		for (Node neighbor : getNeighbors(this->nodes.at(nodeIDX))) {
-
-			if (neighbor.getType() != "impassable") {
-
-				int nodeN = neighbor.index;
-				double costN = neighbor.cost;
-				double distance = cost + costN;
-
-				if (distance < neighbor.cost_so_far) {
-					this->frontierAStar.erase(std::make_pair(neighbor.cost_so_far, nodeN));
-
-					this->nodes.at(nodeN).cost_so_far = distance;
-					this->nodes.at(nodeN).cameFrom = nodeIDX;
-
-					std::cout << heuristic(this->nodes.at(this->targetIDX), this->nodes.at(nodeN)) << std::endl;
-
-					this->frontierAStar.insert(std::make_pair(distance + heuristic(this->nodes.at(this->targetIDX), this->nodes.at(nodeN)), nodeN));
-				}
-
-				if (neighbor.getType() == "target") {
-					this->nodes.at(neighbor.index).setType("visited");
-					this->nodes.at(neighbor.index).setColors("target");
-				}
-				else if (neighbor.getType() == "start") {
-					this->nodes.at(neighbor.index).setType("visited");
-					this->nodes.at(neighbor.index).setColors("start");
-				}
-				else {
-					this->nodes.at(neighbor.index).setType("visited");
-				}
-
-
-				clearWindow();
-				updateGrid();
-				updateRenderer();
+		else {
+			if (currentNode.index == this->startIDX) {
+				this->nodes.at(currentNode.index).setType("visited");
+				this->nodes.at(currentNode.index).setColors("start");
 			}
+			else if (currentNode.index == this->targetIDX) {
+				this->nodes.at(currentNode.index).setType("visited");
+				this->nodes.at(currentNode.index).setColors("target");
+			}
+			else {
+				this->nodes.at(currentNode.index).setType("visited");
+			}
+
+		}
+
+
+		for (Node neighbor : getNeighbors(this->nodes.at(currentNode.index))) {
+
+			if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+				this->AStarList.push_back(neighbor);
+			}
+
+			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+			float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost + this->nodes.at(currentNode.index).cost; //heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+			//float distance = this->nodes.at(currentNode.index).cost_so_far + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+
+			
+			// distance -> fPossiblyLowerGoal -> new_cost
+
+			// cost_so_far -> fLocalGoal
+			// priority -> fGlobalGoal
+
+			if (distance < neighbor.fLocalGoal) {
+				this->nodes.at(neighbor.index).cameFrom = currentNode.index;
+				this->nodes.at(neighbor.index).fLocalGoal = distance;
+				//this->nodes.at(neighbor.index).cost_so_far = distance;
+
+				this->nodes.at(neighbor.index).fGlobalGoal = distance + heuristic(this->nodes.at(neighbor.index), this->nodes.at(this->targetIDX));
+
+			}
+
+			//clearWindow();
+			//updateGrid();
+			//updateRenderer();
+
 		}
 	}
 }
@@ -520,8 +541,14 @@ void Engine::computePathGBFS() {
 void Engine::updateFrontier() {
 
 	if (this->costMode) {
-		//computePathDijkstra();
-		computePathAStar();
+		if (this->useAStar) {
+			computePathAStar();
+		}
+		else if (!this->useAStar) {
+			computePathDijkstra();
+		}
+		
+		
 
 		if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
 			resolvePath();
@@ -568,6 +595,7 @@ void Engine::resolvePath() {
 }
 
 void Engine::setPath() {
+
 	for (int i = 0; i < this->nodes.size(); i++) {
 		
 		if (this->nodes.at(i).getType() == "visited") {

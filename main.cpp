@@ -73,6 +73,10 @@ int main(int argc, char* argv[]) {
 					break;
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.scancode) {
+					case SDL_SCANCODE_J:
+						engine.useAStar = !engine.useAStar;
+						std::cout << "Algorithm: " << (engine.useAStar ? "A*" : "Dijkstra's") << std::endl;
+						break;
 					case SDL_SCANCODE_K:
 						if (engine.complete) {
 							engine.complete = false;
@@ -94,10 +98,10 @@ int main(int argc, char* argv[]) {
 
 							if (engine.costMode) {
 								engine.nodes.at(engine.path.at(0)).cost = 1;
-								engine.nodes.at(engine.path.at(0)).cost_so_far = max_cost;
+								engine.nodes.at(engine.path.at(0)).cost_so_far = INFINITY;
 
 								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost = 1;
-								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost_so_far = max_cost;
+								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost_so_far = INFINITY;
 							}
 
 							engine.reset = false;

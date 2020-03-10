@@ -13,8 +13,6 @@ struct colors {
 	constexpr static Uint8 visited[4] = { 125, 5, 88, 255 };
 };
 
-const double max_cost = std::numeric_limits<double>::infinity();
-
 #pragma once
 class Node
 {
@@ -40,9 +38,12 @@ public:
 
 	int index = 1245;
 
-	double cost = 1;
+	double cost = 1; // LOCAL
 
-	double cost_so_far = max_cost;
+	double cost_so_far = INFINITY;
+
+	float fLocalGoal = INFINITY; // LOCAL
+	float fGlobalGoal = INFINITY; // GLOBAL
 
 	Node(const char* type, int x, int y);
 	~Node();

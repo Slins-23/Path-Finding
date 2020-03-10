@@ -1,6 +1,7 @@
 #include "Node.h"
 #include <vector>
 #include <queue>
+#include <list>
 
 #pragma once
 class Engine
@@ -48,6 +49,8 @@ public:
 
 	int lastNodeChange = 12345;
 
+	bool useAStar = true;
+
 	std::queue<Node> frontier;
 
 	std::set<std::pair<double, int>> frontierPQ;
@@ -55,6 +58,8 @@ public:
 	std::set<std::pair<int, int>> frontierGBFS;
 
 	std::set<std::pair<int, int>> frontierAStar;
+
+	std::list<Node> AStarList;
 
 	int nodesPerRowIDX = (int) (this->WIN_W / 40 - 1);
 	int nodesPerColIDX = (int) (this->WIN_H / 40 - 1);
@@ -74,7 +79,7 @@ public:
 	void updateGrid();
 	void handleNodes(int mouseX, int mouseY, int newX, int newY);
 	void play();
-	int heuristic(Node a, Node b);
+	double heuristic(Node a, Node b);
 	void computePathBFS();
 	void computePathGBFS();
 	void computePathDijkstra();
