@@ -4,10 +4,9 @@ The colors, of type "Uint8", can be in the ranges 0-255 and 0x00-0xFF.
 
 For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
 
-**This is a work-in-progress project. There are going to be many changes in the upcoming week.**<br>
-**A Star algorithm not yet implemented, as I'm working my way up from other algorithms.**<br>
-**The latest implemented algorithm was Dijkstra's.**<br>
-**There's a lot of redundant code, performance issues, lack of comments, documentation, and more. Those are intended to be fixed once I'm satisfied with the core functionalities.**
+**This is a work-in-progress project. There are going to be many changes in the upcoming week(s).**<br>
+**The latest implemented algorithm was A-Star. It's not working properly just yet, though.**<br>
+**There's a lot of redundant code, performance issues, lack of comments, documentation, and more. Those will soon be fixed/improved.**
 # Usage
 
 There are 5 types of tiles:
@@ -29,6 +28,10 @@ Once the path has been found, you can make changes and restart the path finding 
 
 If you want to reset all tiles to "passable" green tiles, you can press the "R" key.<br>
 
+You can press the "J" key to toggle between algorithms for the current mode. <br>
+If on default mode, toggles between Breadth-First Search and Greedy Best-First Search. <br>
+If on cost mode, toggles between Dijkstra's algorithm and A-Star. <br>
+
 ## Colors
 
 | Tile | Color |
@@ -49,6 +52,7 @@ If you want to reset all tiles to "passable" green tiles, you can press the "R" 
 | C | Changes the algorithm to use tile costs. You can increase a tile's cost by right clicking it. Once the cost is 5, it becomes "impassable". |
 | K | After the path was found, pressing this key converts the tiles in the path from "visited" to "passable". Used for better visualization. |
 | V | Toggles view-only mode. |
+| J | Toggles algorithms for the current mode. |
 
 # Compilation
 Compiled in Visual Studio Community 2019, in C++. Using SDL2 and SDL_ttf as external libraries. Release version not tested.
