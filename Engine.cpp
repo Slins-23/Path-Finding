@@ -608,7 +608,7 @@ void Engine::resolvePath() {
 
 }
 
-void Engine::setPath() {
+void Engine::drawPath() {
 
 	for (int i = 0; i < this->nodes.size(); i++) {
 		

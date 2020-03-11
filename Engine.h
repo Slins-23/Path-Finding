@@ -67,36 +67,40 @@ public:
 	Engine(); // Engine constructor with default values and no arguments.
 	Engine(int width, int height); // Engine constructor with default title but passing the window's width and height as arguments.
 	Engine(const char* title, int width, int height); // Engine constructor without default values, window's title, width, and height as arguments.
-	
 	~Engine();
+
+	const char* getTitle(); // Returns the window title.
+	int getWidth(); // Returns the window width.
+	int getHeight(); // Returns the window height.
+
+	void close(); // Closes the environment.
+	void clearWindow(); // Clears the window.
+	void drawNode(Node node); // Draws the Node passed as an argument.
+	void updateRenderer(); // Updates the renderer.
+	void updateGrid(); // Updates the grid.
+	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the position passed as an argument and previous one, if necessary.
+	void play(); // Runs the algorithm.
+
+	void computePathBFS(); // Breadth-First Search algorithm.
+	void computePathGBFS(); // Greedy Best-First Search algorithm.
+	void computePathDijkstra(); // Dijkstra's algorithm.
+	void computePathAStar(); // A* algorithm.
+	void updateFrontier(); // Handles the selected algorithm and calls fucntion to update the path once the algorithm is finished.
+	void resolvePath(); // Finds the path, starting from ther target Node.
+	void drawPath(); // Draws the path found from the above function.
+	void setViewOnly(bool status); // Sets view-only to the argument.
+	void setCostMode(bool costMode); // Sets cost-mode to the argument.
 	
-	int load();
-	void close();
-	void clearWindow();
-	void drawNode(Node node);
-	void updateRenderer();
-	void updateGrid();
-	void handleNodes(int mouseX, int mouseY, int newX, int newY);
-	void play();
-	double heuristic(Node a, Node b);
-	double distance(Node a, Node b);
-	void computePathBFS();
-	void computePathGBFS();
-	void computePathDijkstra();
-	void computePathAStar();
-	void updateFrontier();
-	void resolvePath();
-	void setPath();
-	void setViewOnly(bool status);
-	void setCostMode(bool costMode);
-	std::vector<Node> getNeighbors(Node node);
+	int load(); // Sets up the environment.
+	int getCurrentNode(); // Returns the current hovered over Node's index.
+	
+	double heuristic(Node a, Node b); // Heuristic function.
+	
+	std::vector<Node> getNeighbors(Node node); // Finds all AXIS neighbors for the given Node.
 
-	int getCurrentNode();
-	int getWidth();
-	int getHeight();
+	
 
-	const char* getTitle();
-	SDL_Window& getWindow();
-	SDL_Renderer& getRenderer();
-	SDL_Event getEvent();
+	SDL_Window& getWindow(); // Returns reference to the window.
+	SDL_Renderer& getRenderer(); // Returns reference to the renderer.
+	SDL_Event getEvent(); // Returns the event.
 };
