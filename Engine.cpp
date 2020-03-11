@@ -197,29 +197,37 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 void Engine::start() {
 	std::cout << "Started" << std::endl;
 
+	bool was_paused = this->paused ? true : false;
+
 	this->view_only = true;
 	this->playing = true;
 	this->paused = false;
 
 	if (this->cost_mode) {
 		if (this->use_AStar) {
-			this->start_node->local_goal = 0.0f;
-			this->start_node->global_goal = heuristic(this->start_node, this->target_node);
-			this->AStar_list.clear();
-			this->AStar_list.push_back(this->start_node);
+			if (!was_paused) {
+				this->start_node->local_goal = 0.0f;
+				this->start_node->global_goal = heuristic(this->start_node, this->target_node);
+				this->AStar_list.clear();
+				this->AStar_list.push_back(this->start_node);
+			}
+
 			computePathAStar();
 
-			if ((this->frontier_pq.empty() && this->target_node != nullptr) || this->target_found) {
+			if (((this->AStar_list.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
 				resolvePath();
 			}
 		}
 		else if (!this->use_AStar) {
-			this->frontier_pq.clear();
-			this->start_node->cost_so_far = 0;
-			this->frontier_pq.insert(std::make_pair(0, this->start_node));
+			if (!was_paused) {
+				this->frontier_pq.clear();
+				this->start_node->cost_so_far = 0;
+				this->frontier_pq.insert(std::make_pair(0, this->start_node));
+			}
+
 			computePathDijkstra();
 
-			if ((this->AStar_list.empty() && this->target_node != nullptr) || this->target_found) {
+			if (((this->frontier_pq.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
 				resolvePath();
 			}
 		}
@@ -228,20 +236,26 @@ void Engine::start() {
 	}
 	else if (!this->cost_mode) {
 		if (this->use_GBFS) {
-			this->frontier_gbfs.insert(std::make_pair(0, this->start_node));
+			if (!was_paused) {
+				this->frontier_gbfs.insert(std::make_pair(0, this->start_node));
+			}
+			
 			computePathGBFS();
 
-			if ((this->AStar_list.empty() && this->target_node != nullptr) || this->target_found) {
+			if (((this->frontier_gbfs.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
 				resolvePath();
 			}
 		}
 		else if (!this->use_GBFS) {
-			this->start_node->setType("visited");
-			this->start_node->setColors("start");
-			this->frontier.push(this->start_node);
+			if (!was_paused) {
+				this->start_node->setType("visited");
+				this->start_node->setColors("start");
+				this->frontier.push(this->start_node);
+			}
+
 			computePathBFS();
 
-			if ((this->AStar_list.empty() && this->target_node != nullptr) || this->target_found) {
+			if (((this->frontier.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
 				resolvePath();
 			}
 		}
@@ -249,11 +263,18 @@ void Engine::start() {
 
 	}
 
-	drawPath();
+	if (!this->paused) {
+		drawPath();
+		this->playing = false;
+		this->view_only = false;
+		this->complete = true;
+	}
+	else if (this->paused) {
+		this->playing = false;
+		this->view_only = true;
+		this->complete = false;
+	}
 
-	this->playing = false;
-	this->view_only = false;
-	this->complete = true;
 }
 
 double Engine::heuristic(Node* a, Node* b) {
@@ -262,10 +283,6 @@ double Engine::heuristic(Node* a, Node* b) {
 
 void Engine::computePathDijkstra() {
 	while (!this->frontier_pq.empty()) {
-
-		if (this->paused) {
-			break;
-		}
 
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
@@ -279,6 +296,10 @@ void Engine::computePathDijkstra() {
 				break;
 			}
 
+		}
+
+		if (this->paused) {
+			break;
 		}
 
 		float cost = this->frontier_pq.begin()->first;
@@ -329,22 +350,16 @@ void Engine::computePathDijkstra() {
 				}
 
 
-				//clearWindow();
-				//updateGrid();
-				//updateRenderer();
+				clearWindow();
+				updateGrid();
+				updateRenderer();
 			}
 		}
 	}
 }
 
 void Engine::computePathAStar() {
-	//
-
 	while (!this->AStar_list.empty()) {
-
-		if (this->paused) {
-			break;
-		}
 
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
@@ -358,6 +373,10 @@ void Engine::computePathAStar() {
 				break;
 			}
 
+		}
+
+		if (this->paused) {
+			break;
 		}
 
 		this->AStar_list.sort([](const Node* a, const Node* b) { return a->global_goal < b->global_goal;  });
@@ -440,10 +459,6 @@ void Engine::computePathBFS() {
 
 	while (!this->frontier.empty()) {
 
-		if (this->paused) {
-			break;
-		}
-
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
 			case SDL_KEYDOWN:
@@ -456,6 +471,10 @@ void Engine::computePathBFS() {
 				break;
 			}
 
+		}
+
+		if (this->paused) {
+			break;
 		}
 
 		bool found = false;
@@ -515,10 +534,6 @@ void Engine::computePathGBFS() {
 
 	while (!this->frontier_gbfs.empty()) {
 
-		if (this->paused) {
-			break;
-		}
-
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
 			case SDL_KEYDOWN:
@@ -531,6 +546,10 @@ void Engine::computePathGBFS() {
 				break;
 			}
 
+		}
+
+		if (this->paused) {
+			break;
 		}
 
 		Node* currentNode = this->frontier_gbfs.begin()->second;
@@ -585,7 +604,6 @@ void Engine::computePathGBFS() {
 }
 
 void Engine::resolvePath() {
-
 	this->path = std::vector<Node*>();
 
 	Node* current_node = this->target_node;

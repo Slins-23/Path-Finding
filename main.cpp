@@ -29,7 +29,6 @@ int main(int argc, char* argv[]) {
 				// Everytime the mouse is moved, update the mouse position and get the current Node index. Change Node color once mouse is over it to the current Node type.
 				case SDL_MOUSEMOTION:
 					engine.updateMousePosition();
-
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 					engine.handleMouse(true, event.button.button);
