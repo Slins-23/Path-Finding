@@ -391,7 +391,9 @@ void Engine::computePathAStar() {
 
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
+			std::cout << "One" << std::endl;
 			float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost;
+			std::cout << "Two" << std::endl;
 			
 			//float distance = this->nodes.at(currentNode.index).cost_so_far + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 
@@ -402,17 +404,23 @@ void Engine::computePathAStar() {
 			// priority -> fGlobalGoal
 
 			if (distance < neighbor.fLocalGoal) {
+				std::cout << "Three" << std::endl;
 				this->nodes.at(neighbor.index).cameFrom = currentNode.index;
 				this->nodes.at(neighbor.index).fLocalGoal = distance;
 				//this->nodes.at(neighbor.index).cost_so_far = distance;
 
 				this->nodes.at(neighbor.index).fGlobalGoal = distance + heuristic(this->nodes.at(neighbor.index), this->nodes.at(this->targetIDX));
+				std::cout << "Four" << std::endl;
 			}
 
 			//clearWindow();
 			//updateGrid();
 			//updateRenderer();
 
+		}
+
+		if (currentNode.index == this->targetIDX) {
+			break;
 		}
 	}
 
