@@ -7,68 +7,67 @@
 class Engine
 {
 private:
-	const char* TITLE = "A* Path Finding Algorithm";
-	int WIN_W = 800;
-	int WIN_H = 600;
-	SDL_Window* window;
-	SDL_Renderer* renderer;
-	SDL_Surface* surface;
-	SDL_Event event;
+	const char* TITLE = "A* Path Finding Algorithm"; // Window title.
+	int WIN_W = 800; // Window width.
+	int WIN_H = 600; // Window hegiht.
+	SDL_Window* window; // Window pointer.
+	SDL_Renderer* renderer; // Renderer pointer.
+	SDL_Surface* surface; // Surface pointer.
+	SDL_Event event; // Event variable.
 	
-	bool loaded = false;
-	int currentIndex = 12345;
-	int newIndex = 0;
+	bool loaded = false; // Whether the engine was loaded.
+	int currentIndex = 12345; // Last hovered over Node's index.
+	int newIndex = 0; // Currently hovered over Node's index.
 
 public:
 
-	TTF_Font* cost_font;
+	TTF_Font* cost_font; // Font for the cost.
 
-	std::vector<Node> nodes;
-	std::vector<int> path;
+	std::vector<Node> nodes; // All nodes are stored in this array.
+	std::vector<int> path; // The path indexes gets stored in this array once it's found.
 
-	bool reset = false;
-	bool paused = false;
-	bool playing = false;
+	bool reset = false; // Whether the Nodes should be reset.
+	bool paused = false; // Whether the path finding is paused.
+	bool playing = false; // Whether the path finding is playing.
 
-	bool pickStart = false;
-	bool pickTarget = false;
+	bool pickStart = false; // If the current selection mode is starting point.
+	bool pickTarget = false; // If the current selection mode is target point.
 
-	bool viewOnly = false;
-	bool costMode = false;
+	bool viewOnly = false; // If current selection mode is view-only.
+	bool costMode = false; // If current path finding mode is using costs or not.
 
-	bool isHeld = false;
+	bool isHeld = false; // Whether the left mouse button is being held or not.
 
-	bool complete = false;
+	bool complete = false; // Whether the path finding has been completed.
 
-	bool mode_changed = false;
+	bool mode_changed = false; // Whether there was a change in the path finding modes.
 
-	bool targetFound = false;
+	bool targetFound = false; // Whether the target Node has been visited while trying to find a path.
 
-	int startIDX = 12345;
-	int targetIDX = 12345;
+	int startIDX = 12345; // Starting Node index.
+	int targetIDX = 12345; // Target Node index.
 
-	int lastNodeChange = 12345;
+	int lastNodeChange = 12345; // Which Node index has had a change of focus into the current Node.
 
-	bool useAStar = true;
+	bool useAStar = true; // Whether the A-Star algorithm is being used or not.
 
-	std::queue<Node> frontier;
+	std::queue<Node> frontier; // Node frontier for Breadth-First Search.
 
-	std::set<std::pair<double, int>> frontierPQ;
+	std::set<std::pair<double, int>> frontierPQ; // Node frontier for Dijkstra's algorithm.
 
-	std::set<std::pair<int, int>> frontierGBFS;
+	std::set<std::pair<int, int>> frontierGBFS; // Node frontier for Greedy Best-First Search.
 
-	std::set<std::pair<int, int>> frontierAStar;
+	std::list<Node> AStarList; // Node frontier for A*.
 
-	std::list<Node> AStarList;
+	int nodesPerRowIDX = (int) (this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
+	int nodesPerColIDX = (int) (this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
 
-	int nodesPerRowIDX = (int) (this->WIN_W / 40 - 1);
-	int nodesPerColIDX = (int) (this->WIN_H / 40 - 1);
+	int nodeCountIDX = (nodesPerRowIDX + 1) * (nodesPerColIDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
 
-	int nodeCountIDX = (nodesPerRowIDX + 1) * (nodesPerColIDX + 1) - 1;
-
-	Engine();
-	Engine(const char* title, int width, int height);
-	Engine(int width, int height);
+	Engine(); // Engine constructor with default values and no arguments.
+	Engine(int width, int height); // Engine constructor with default title but passing the window's width and height as arguments.
+	Engine(const char* title, int width, int height); // Engine constructor without default values, window's title, width, and height as arguments.
+	
 	~Engine();
 	
 	int load();
