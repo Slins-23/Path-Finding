@@ -16,8 +16,8 @@ private:
 	// Integers
 	int WIN_W = 800; // Window width.
 	int WIN_H = 600; // Window hegiht.
-	int currentIndex = 12345; // Last hovered over Node's index.
-	int newIndex = 0; // Currently hovered over Node's index.
+	Node* lastNode = nullptr; // Last hovered over Node's index.
+	Node* currentNode = nullptr; // Currently hovered over Node's index.
 
 	// Custom classes
 	SDL_Window* window; // Window pointer.
@@ -28,9 +28,14 @@ public:
 	// Fonts
 	TTF_Font* cost_font; // Font for the cost.
 
+	// Nodes
+	Node* startNode = nullptr;
+	Node* targetNode = nullptr;
+	Node* lastNodeChanged = nullptr;
+
 	// Arrays
-	std::vector<Node> nodes; // All nodes are stored in this array.
-	std::vector<int> path; // The path indexes gets stored in this array once it's found.
+	std::vector<Node*> nodes; // All nodes are stored in this array.
+	std::vector<Node*> path; // The path indexes gets stored in this array once it's found.
 
 	// Booleans
 	bool reset = false; // Whether the Nodes should be reset.
@@ -48,18 +53,15 @@ public:
 	bool useGBFS = true; // Whether the Greedy Best-First Search algorithm is being used or not.
 
 	// Integers
-	int startIDX = 12345; // Starting Node index.
-	int targetIDX = 12345; // Target Node index.
-	int lastNodeChange = 12345; // Which Node index has had a change of focus into the current Node.
 	int nodesPerRowIDX = (int)(this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
 	int nodesPerColIDX = (int)(this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
 	int nodeCountIDX = (nodesPerRowIDX + 1) * (nodesPerColIDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
 
 	// Priority Queues
-	std::queue<Node> frontier; // Nodes queue for Breadth-First Search.
-	std::set<std::pair<double, int>> frontierPQ; // Nodes priority queue for Dijkstra's algorithm.
-	std::set<std::pair<int, int>> frontierGBFS; // Nodes priority queue for Greedy Best-First Search.
-	std::list<Node> AStarList; // Nodes priority queue for A*.
+	std::queue<Node*> frontier; // Nodes queue for Breadth-First Search.
+	std::set<std::pair<double, Node*>> frontierPQ; // Nodes priority queue for Dijkstra's algorithm.
+	std::set<std::pair<int, Node*>> frontierGBFS; // Nodes priority queue for Greedy Best-First Search.
+	std::list<Node*> AStarList; // Nodes priority queue for A*.
 
 	// Environment
 	Engine(); // Engine constructor with default values and no arguments.
@@ -71,11 +73,11 @@ public:
 	void close(); // Closes the environment.
 
 	// Getters
-	std::vector<Node> getNeighbors(Node node); // Finds all AXIS neighbors for the given Node.
+	std::vector<Node*> getNeighbors(Node* node); // Finds all AXIS neighbors for the given Node.
 	const char* getTitle(); // Returns the window title.
 	int getWidth(); // Returns the window width.
 	int getHeight(); // Returns the window height.
-	int getCurrentNode(); // Returns the current hovered over Node's index.
+	Node* getCurrentNode(); // Returns the current hovered over Node's index.
 	SDL_Window& getWindow(); // Returns reference to the window.
 	SDL_Renderer& getRenderer(); // Returns reference to the renderer.
 	SDL_Event getEvent(); // Returns the event.
@@ -90,7 +92,7 @@ public:
 	void computePathDijkstra(); // Dijkstra's algorithm.
 	void computePathAStar(); // A* algorithm.
 	void resolvePath(); // Finds the path, starting from ther target Node.	
-	double heuristic(Node a, Node b); // Heuristic function.
+	double heuristic(Node* a, Node* b); // Heuristic function.
 
 	// SDL
 	void clearWindow(); // Clears the window.
@@ -98,5 +100,5 @@ public:
 	void updateRenderer(); // Updates the renderer.
 	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
 	void drawPath(); // Draws the path found from the above function.
-	void drawNode(Node node); // Draws the Node passed as an argument.
+	void drawNode(Node* node); // Draws the Node passed as an argument.
 };

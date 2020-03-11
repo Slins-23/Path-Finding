@@ -57,14 +57,14 @@ int main(int argc, char* argv[]) {
 					else if (event.button.button == SDL_BUTTON_RIGHT) { // If right mouse button is clicked when hovering a Node inside "cost mode", increase the Node's cost by 1. If it reaches 5, becomes "impassable".
 
 						if (engine.costMode) {
-							if (engine.nodes.at(engine.getCurrentNode()).getType() == "passable") {
+							if (engine.getCurrentNode()->getType() == "passable") {
 
-								if (engine.nodes.at(engine.getCurrentNode()).cost < 4) {
-									engine.nodes.at(engine.getCurrentNode()).cost += 1;
+								if (engine.getCurrentNode()->cost < 4) {
+									engine.getCurrentNode()->cost += 1;
 								}
-								else if (engine.nodes.at(engine.getCurrentNode()).cost == 4) {
-									engine.nodes.at(engine.getCurrentNode()).cost += 1;
-									engine.nodes.at(engine.getCurrentNode()).setType("impassable");
+								else if (engine.getCurrentNode()->cost == 4) {
+									engine.getCurrentNode()->cost += 1;
+									engine.getCurrentNode()->setType("impassable");
 								}
 
 							}
@@ -93,28 +93,30 @@ int main(int argc, char* argv[]) {
 					case SDL_SCANCODE_K:
 						if (engine.complete) {
 							engine.complete = false;
-							
-							for (int i = 1; i < engine.path.size() - 1; i++) {
-								if (engine.costMode) {
-									double cost = engine.nodes.at(engine.path.at(i)).cost;
-									engine.nodes.at(engine.path.at(i)).setType("passable");
-									engine.nodes.at(engine.path.at(i)).cost = cost;
-								}
-								else {
-									engine.nodes.at(engine.path.at(i)).setType("passable");
-								}
 
+							for (Node* pathNode : engine.path) {
+								if (engine.costMode) {
+									double cost = pathNode->cost;
+									pathNode->setType("passable");
+									pathNode->cost = cost;
+								}
+								else if (!engine.costMode) {
+									pathNode->setType("passable");
+								}
 							}
 
-							engine.nodes.at(engine.path.at(0)).setType("target");
-							engine.nodes.at(engine.path.at(engine.path.size() - 1)).setType("start");
+							Node* startingNode = engine.path.at(engine.path.size() - 1);
+							Node* targetNode = engine.path.at(0);
+
+							startingNode->setType("start");
+							targetNode->setType("target");
 
 							if (engine.costMode) {
-								engine.nodes.at(engine.path.at(0)).cost = 1;
-								engine.nodes.at(engine.path.at(0)).cost_so_far = INFINITY;
+								startingNode->cost = 1;
+								startingNode->cost_so_far = INFINITY;
 
-								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost = 1;
-								engine.nodes.at(engine.path.at(engine.path.size() - 1)).cost_so_far = INFINITY;
+								targetNode->cost = 1;
+								targetNode->cost_so_far = INFINITY;
 							}
 
 							engine.reset = false;
@@ -147,8 +149,8 @@ int main(int argc, char* argv[]) {
 						engine.playing = false;
 						engine.paused = false;
 						engine.targetFound = false;
-						engine.startIDX = 12345;
-						engine.targetIDX = 12345;
+						engine.startNode = nullptr;
+						engine.targetNode = nullptr;
 						break;
 
 					// Enter starting point selection mode
@@ -180,108 +182,107 @@ int main(int argc, char* argv[]) {
 					break;
 				}
 			}
-				
-				engine.clearWindow(); // Clears the window.
 
-				// If not on view-only mode, handle left mouse click, if clicked/held.
-				if (!engine.viewOnly) {
+			engine.clearWindow(); // Clears the window.
 
-					if (engine.isHeld) {
+			// If not on view-only mode, handle left mouse click, if clicked/held.
+			if (!engine.viewOnly) {
 
-						// Checks if the Node currently being hovered over has changed since the last time it was updated (implementation of "painting" Nodes) and if the Node's index does not exceed the Nodes array size.
-						if (engine.getCurrentNode() != engine.lastNodeChange && engine.getCurrentNode() < engine.nodes.size()) {
+				if (engine.isHeld) {
 
-							Node currentNode = engine.nodes.at(engine.getCurrentNode());
-							const char* currentType = currentNode.getType();
+					Node* currentNode = engine.getCurrentNode();
 
-							// If the active selection mode is not both start and target points.
-							if (!engine.pickStart && !engine.pickTarget) { 
+					// Checks if the Node currently being hovered over has changed since the last time it was updated (implementation of "painting" Nodes) and if the Node's index does not exceed the Nodes array size.
+					if (currentNode != engine.lastNodeChanged && currentNode->index < engine.nodes.size()) {
+
+						// If the active selection mode is not both start and target points.
+						if (!engine.pickStart && !engine.pickTarget) { 
 
 
-								// If Node is not passable, make it passable and update its cost to 1.
-								if (currentType != "passable") {
-									engine.nodes.at(engine.getCurrentNode()).setType("passable");
+							// If Node is not passable, make it passable and update its cost to 1.
+							if (currentNode->getType() != "passable") {
+								currentNode->setType("passable");
 
-									if (engine.costMode) {
-										engine.nodes.at(engine.getCurrentNode()).cost = 1;
-									}
+								if (engine.costMode) {
+									currentNode->cost = 1;
 								}
-
-								// If Node is passable, make it impassable and update its cost to 5.
-								else if (currentType == "passable") {
-									engine.nodes.at(engine.getCurrentNode()).setType("impassable");
-
-									if (engine.costMode) {
-										engine.nodes.at(engine.getCurrentNode()).cost = 5;
-									}
-								}
-
-								// Updates the last changed node to be the current one.
-								engine.lastNodeChange = engine.getCurrentNode();
 							}
 
-							// If the active selection mode is start but not target point.
-							else if (engine.pickStart && !engine.pickTarget) {
+							// If Node is passable, make it impassable and update its cost to 5.
+							else if (currentNode->getType() == "passable") {
+								currentNode->setType("impassable");
 
-								// Updates the Node to become the starting Node.
-								engine.nodes.at(engine.getCurrentNode()).setType("start");
-								engine.nodes.at(engine.getCurrentNode()).cost = 1;
-								engine.pickStart = false;
-
-								// If starting Node has already been set before, set the previous starting Node to passable and update the starting Node index to be the current Node's
-								if (engine.startIDX != 12345) {
-									engine.nodes.at(engine.startIDX).setType("passable");
-									engine.startIDX = engine.getCurrentNode();
+								if (engine.costMode) {
+									currentNode->cost = 5;
 								}
-
-								// If starting Node has not been set before, update the starting Node index to be the current Node's
-								else {
-									engine.startIDX = engine.getCurrentNode();
-								}
-
-								// Updates the last changed node to be the current one.
-								engine.lastNodeChange = engine.getCurrentNode();
 							}
 
-							// If the active selection mode is target but not target start.
-							else if (!engine.pickStart && engine.pickTarget) {
+							// Updates the last changed node to be the current one.
+							engine.lastNodeChanged = currentNode;
+						}
 
-								// Updates the Node to become the target Node.
-								engine.nodes.at(engine.getCurrentNode()).setType("target");
-								engine.nodes.at(engine.getCurrentNode()).cost = 1;
-								engine.pickTarget = false;
+						// If the active selection mode is start but not target point.
+						else if (engine.pickStart && !engine.pickTarget) {
 
-								// If target Node has already been set before, set the previous target Node to passable and update the target Node index to be the current Node's
-								if (engine.targetIDX != 12345) {
-									engine.nodes.at(engine.targetIDX).setType("passable");
-									engine.targetIDX = engine.getCurrentNode();
-								}
+							// Updates the Node to become the starting Node.
+							currentNode->setType("start");
+							currentNode->cost = 1;
+							engine.pickStart = false;
 
-								// If target Node has not been set before, update the target Node index to be the current Node's
-								else {
-									engine.targetIDX = engine.getCurrentNode();
-								}
-
-								// Updates the last changed node to be the current one.
-								engine.lastNodeChange = engine.getCurrentNode();
+							// If starting Node has already been set before, set the previous starting Node to passable and update the starting Node index to be the current Node's
+							if (engine.startNode != nullptr) {
+								engine.startNode->setType("passable");
+								engine.startNode = currentNode;
 							}
+
+							// If starting Node has not been set before, update the starting Node index to be the current Node's
+							else {
+								engine.startNode = currentNode;
+							}
+
+							// Updates the last changed node to be the current one.
+							engine.lastNodeChanged = currentNode;
+						}
+
+						// If the active selection mode is target but not target start.
+						else if (!engine.pickStart && engine.pickTarget) {
+
+							// Updates the Node to become the target Node.
+							currentNode->setType("target");
+							currentNode->cost = 1;
+							engine.pickTarget = false;
+
+							// If target Node has already been set before, set the previous target Node to passable and update the target Node index to be the current Node's
+							if (engine.targetNode != nullptr) {
+								engine.targetNode->setType("passable");
+								engine.targetNode = currentNode;
+							}
+
+							// If target Node has not been set before, update the target Node index to be the current Node's
+							else {
+								engine.targetNode = currentNode;
+							}
+
+							// Updates the last changed node to be the current one.
+							engine.lastNodeChanged = currentNode;
 						}
 					}
 				}
+			}
 			
-				engine.updateGrid(); // Updates the grid. Redraws all Nodes or resets Node array and redraws them, if "R" was pressed.
+			engine.updateGrid(); // Updates the grid. Redraws all Nodes or resets Node array and redraws them, if "R" was pressed.
 
-				engine.updateRenderer(); // Updates the renderer.
+			engine.updateRenderer(); // Updates the renderer.
 
-				frameTime = SDL_GetTicks() - frameStart;
+			frameTime = SDL_GetTicks() - frameStart;
 
-				if (frameDelay > frameTime) {
-					SDL_Delay(frameDelay - frameTime);
-				}
+			if (frameDelay > frameTime) {
+				SDL_Delay(frameDelay - frameTime);
 			}
 		}
+	}
 	else {
-		std::cout << "Could not load engine." << std::endl;
+	std::cout << "Could not load engine." << std::endl;
 	}
 
 	return 1;

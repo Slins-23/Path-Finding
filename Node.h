@@ -40,11 +40,13 @@ private:
 	const char* type; // Node's type. ("passable" || "impassable" || "start" || "target" || "visited")
 
 public:
+	// Nodes
+	Node* cameFrom = nullptr; // Node from which this Node came from.
+
 	// Booleans
 	bool visited = false; // Whether this Node was visited by the algorithm.
 
 	// Integers
-	int cameFrom = 0; // Index of the Node from which this Node came from.
 	int index = 1245; // Node's index.
 
 	// Floats

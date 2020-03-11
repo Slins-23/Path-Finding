@@ -88,25 +88,25 @@ void Engine::updateRenderer() {
 	SDL_RenderPresent(this->renderer);
 }
 
-void Engine::drawNode(Node node) {
-	SDL_SetRenderDrawColor(this->renderer, node.getRed(), node.getGreen(), node.getBlue(), node.getAlpha());
+void Engine::drawNode(Node* node) {
+	SDL_SetRenderDrawColor(this->renderer, node->getRed(), node->getGreen(), node->getBlue(), node->getAlpha());
 
 	SDL_Rect rect;
-	rect.x = node.getX();
-	rect.y = node.getY();
-	rect.w = node.getWidth();
-	rect.h = node.getHeight();
+	rect.x = node->getX();
+	rect.y = node->getY();
+	rect.w = node->getWidth();
+	rect.h = node->getHeight();
 
 	SDL_RenderFillRect(this->renderer, &rect);
 
 	SDL_SetRenderDrawColor(this->renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderDrawRect(this->renderer, &rect);
 
-	if (this->costMode && node.cost > 1) {
+	if (this->costMode && node->cost > 1) {
 
 		SDL_Color color = { 0, 0, 0, 255 };
 
-		std::string str = std::to_string(node.cost);
+		std::string str = std::to_string(node->cost);
 
 		str = str[0];
 
@@ -121,11 +121,11 @@ void Engine::drawNode(Node node) {
 
 		SDL_Rect txtRect;
 
-		if (node.cost >= 10) {
-			txtRect = { node.getX() + (w / 6), node.getY() + (h / 8), w, h };
+		if (node->cost >= 10) {
+			txtRect = { node->getX() + (w / 6), node->getY() + (h / 8), w, h };
 		}
-		else if (node.cost < 10) {
-			txtRect = { node.getX() + (int) (w / 1.25), node.getY() + (h / 8), w, h };
+		else if (node->cost < 10) {
+			txtRect = { node->getX() + (int)(w / 1.25), node->getY() + (h / 8), w, h };
 		}
 
 		SDL_RenderCopy(this->renderer, txt, NULL, &txtRect);
@@ -137,16 +137,19 @@ void Engine::drawNode(Node node) {
 
 void Engine::updateGrid() {
 	if (!this->loaded || this->reset || this->mode_changed) {
-		this->nodes = std::vector<Node>();
+		this->nodes = std::vector<Node*>();
 
 		int idx = 0;
 
+		int storedIDX = 0;
+
 		for (int y = 0; y < this->WIN_H; y += 40) {
 			for (int x = 0; x < this->WIN_W; x += 40) {
-				Node node = Node("passable", x, y);
-				node.index = idx;
+				Node* node = new Node("passable", x, y);
+				node->index = idx;
 
 				this->nodes.push_back(node);
+				this->nodes.back()->index = idx;
 				idx++;
 			}
 		}
@@ -156,61 +159,53 @@ void Engine::updateGrid() {
 		this->mode_changed = false;
 	}
 
-	for (Node node : this->nodes) {
+	for (Node* node : this->nodes) {
 		drawNode(node);
 	}
 }
 
 void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
-	this->newIndex = (newY / 40 * this->WIN_W / 40) + newX / 40;
 
-	if (this->currentIndex == 12345 && !this->reset && this->loaded) {
-		this->currentIndex = this->newIndex;
-
-		this->nodes.at(currentIndex).setColors("impassable");
+	if ((newY / 40 * this->WIN_W / 40) + newX / 40 < this->nodes.size()) {
+		this->currentNode = this->nodes.at((newY / 40 * this->WIN_W / 40) + newX / 40);
 	}
-	else if (this->currentIndex != 12345 && !this->reset) {
 
-		if (this->currentIndex != this->newIndex) {
+	if (this->lastNode == nullptr && !this->reset && this->loaded) {
+		this->lastNode = this->currentNode;
+		this->lastNode->setColors("impassable");
+	}
+	else if (this->lastNode != nullptr && !this->reset) {
+
+		if (this->lastNode != this->currentNode) {
 			if (newX >= 0 && newY >= 0 && newX < this->WIN_W && newY < this->WIN_H) {
-
-				Node currentNode = this->nodes.at(this->currentIndex);
-				Node newNode = this->nodes.at(this->newIndex);
-				const char* currentType = currentNode.getType();
-				const char* newType = newNode.getType();
 
 				if (!this->pickStart && !this->pickTarget) {
 
-					if (newType == "passable") {
-						this->nodes.at(this->newIndex).setColors("impassable");
+					if (this->currentNode->getType() == "passable") {
+						this->currentNode->setColors("impassable");
 					}
-					else if (newType == "impassable") {
-						this->nodes.at(this->newIndex).setColors("passable");
+					else if (this->currentNode->getType() == "impassable") {
+						this->currentNode->setColors("passable");
 					}
 					else {
-						this->nodes.at(this->newIndex).setColors("passable");
+						this->currentNode->setColors("passable");
 					}
-
-					this->nodes.at(this->currentIndex).setColors(currentNode.getType());
 				}
 				else if (this->pickStart && !this->pickTarget) {
-					this->nodes.at(this->newIndex).setColors("start");
-
-					this->nodes.at(this->currentIndex).setColors(currentNode.getType());
+					this->currentNode->setColors("start");
 				}
 				else if (!this->pickStart && this->pickTarget) {
-					this->nodes.at(this->newIndex).setColors("target");
-
-					this->nodes.at(this->currentIndex).setColors(currentNode.getType());
+					this->currentNode->setColors("target");
 				}
 
-				this->currentIndex = this->newIndex;
+				this->lastNode->setColors(this->lastNode->getType());
+				this->lastNode = this->currentNode;
 			}
 		}
 	}
 	else if (this->reset) {
 		this->reset = false;
-		this->currentIndex = 12345;
+		this->lastNode = nullptr;
 	}
 
 }
@@ -218,23 +213,23 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 void Engine::start() {
 	if (this->costMode) {
 		if (this->useAStar) {
-			this->nodes.at(this->startIDX).fLocalGoal = 0.0f;
-			this->nodes.at(this->startIDX).fGlobalGoal = heuristic(this->nodes.at(this->startIDX), this->nodes.at(this->targetIDX));
+			this->startNode->fLocalGoal = 0.0f;
+			this->startNode->fGlobalGoal = heuristic(this->startNode, this->targetNode);
 			this->AStarList.clear();
-			this->AStarList.push_back(this->nodes.at(this->startIDX));
+			this->AStarList.push_back(this->startNode);
 			computePathAStar();
 
-			if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
+			if ((this->frontierPQ.empty() && this->targetNode != nullptr) || this->targetFound) {
 				resolvePath();
 			}
 		}
 		else if (!this->useAStar) {
 			this->frontierPQ.clear();
-			this->nodes.at(this->startIDX).cost_so_far = 0;
-			this->frontierPQ.insert(std::make_pair(0, this->startIDX));
+			this->startNode->cost_so_far = 0;
+			this->frontierPQ.insert(std::make_pair(0, this->startNode));
 			computePathDijkstra();
 
-			if ((this->AStarList.empty() && this->targetIDX != 12345) || this->targetFound) {
+			if ((this->AStarList.empty() && this->targetNode != nullptr) || this->targetFound) {
 				resolvePath();
 			}
 		}
@@ -243,20 +238,20 @@ void Engine::start() {
 	}
 	else if (!this->costMode) {
 		if (this->useGBFS) {
-			this->frontierGBFS.insert(std::make_pair(0, this->startIDX));
+			this->frontierGBFS.insert(std::make_pair(0, this->startNode));
 			computePathGBFS();
 
-			if ((this->frontierGBFS.empty() && this->targetIDX != 12345) || this->targetFound) {
+			if ((this->AStarList.empty() && this->targetNode != nullptr) || this->targetFound) {
 				resolvePath();
 			}
 		}
 		else if (!this->useGBFS) {
-			this->nodes.at(this->startIDX).setType("visited");
-			this->nodes.at(this->startIDX).setColors("start");
-			this->frontier.push(this->nodes.at(this->startIDX));
+			this->startNode->setType("visited");
+			this->startNode->setColors("start");
+			this->frontier.push(this->startNode);
 			computePathBFS();
 
-			if ((this->frontier.empty() && this->targetIDX != 12345) || this->targetFound) {
+			if ((this->AStarList.empty() && this->targetNode != nullptr) || this->targetFound) {
 				resolvePath();
 			}
 		}
@@ -267,8 +262,8 @@ void Engine::start() {
 	drawPath();
 }
 
-double Engine::heuristic(Node a, Node b) {
-	return sqrtf((a.getX() - b.getX()) * (a.getX() - b.getX()) + (a.getY() - b.getY()) * (a.getY() - b.getY()));
+double Engine::heuristic(Node* a, Node* b) {
+	return sqrtf((a->getX() - b->getX()) * (a->getX() - b->getX()) + (a->getY() - b->getY()) * (a->getY() - b->getY()));
 }
 
 void Engine::computePathDijkstra() {
@@ -292,52 +287,51 @@ void Engine::computePathDijkstra() {
 
 		}
 
-		double cost = this->frontierPQ.begin()->first;
-		int nodeIDX = this->frontierPQ.begin()->second;
+		float cost = this->frontierPQ.begin()->first;
+		Node* currentNode = this->frontierPQ.begin()->second;
 		this->frontierPQ.erase(this->frontierPQ.begin());
 
 
-		if (nodeIDX == this->targetIDX) {
+		if (currentNode == this->targetNode) {
 			this->targetFound = true;
 			break;
 		}
 
-		this->nodes.at(nodeIDX).setType("visited");
+		currentNode->setType("visited");
 
-		if (this->nodes.at(nodeIDX).getType() == "target") {
-			this->nodes.at(nodeIDX).setColors("target");
+		if (currentNode->getType() == "target") {
+			currentNode->setColors("target");
 		}
-		else if (this->nodes.at(nodeIDX).getType() == "start") {
-			this->nodes.at(nodeIDX).setColors("start");
+		else if (currentNode->getType() == "start") {
+			currentNode->setColors("start");
 		}
 
-		for (Node neighbor : getNeighbors(this->nodes.at(nodeIDX))) {
+		for (Node* neighbor : getNeighbors(currentNode)) {
 
-			if (neighbor.getType() != "impassable") {
+			if (neighbor->getType() != "impassable") {
 
-				int nodeN = neighbor.index;
-				double costN = neighbor.cost;
+				double costN = neighbor->cost;
 				double distance = cost + costN;
 
-				if (distance < neighbor.cost_so_far) {
-					this->frontierPQ.erase(std::make_pair(neighbor.cost_so_far, nodeN));
+				if (distance < neighbor->cost_so_far) {
+					this->frontierPQ.erase(std::make_pair(neighbor->cost_so_far, neighbor));
 
-					this->nodes.at(nodeN).cost_so_far = distance;
-					this->nodes.at(nodeN).cameFrom = nodeIDX;
+					neighbor->cost_so_far = distance;
+					neighbor->cameFrom = currentNode;
 
-					this->frontierPQ.insert(std::make_pair(this->nodes.at(nodeN).cost_so_far, nodeN));
+					this->frontierPQ.insert(std::make_pair(neighbor->cost_so_far, neighbor));
 				}
 
-				if (neighbor.getType() == "target") {
-					this->nodes.at(neighbor.index).setType("visited");
-					this->nodes.at(neighbor.index).setColors("target");
+				if (neighbor->getType() == "target") {
+					neighbor->setType("visited");
+					neighbor->setColors("target");
 				}
-				else if (neighbor.getType() == "start") {
-					this->nodes.at(neighbor.index).setType("visited");
-					this->nodes.at(neighbor.index).setColors("start");
+				else if (neighbor->getType() == "start") {
+					neighbor->setType("visited");
+					neighbor->setColors("start");
 				}
 				else {
-					this->nodes.at(neighbor.index).setType("visited");
+					neighbor->setType("visited");
 				}
 
 
@@ -372,10 +366,9 @@ void Engine::computePathAStar() {
 
 		}
 
-		//this->AStarList.sort([](const Node a, const Node b) { return a.fGlobalGoal < b.fGlobalGoal; });
-		this->AStarList.sort([](const Node a, const Node b) { return a.fGlobalGoal < b.fGlobalGoal;  });
+		this->AStarList.sort([](const Node* a, const Node* b) { return a->fGlobalGoal < b->fGlobalGoal;  });
 
-		if (!this->AStarList.empty() && this->nodes.at(this->AStarList.front().index).getType() == "visited") {
+		if (!this->AStarList.empty() && this->AStarList.front()->getType() == "visited") {
 			this->AStarList.pop_front();
 		}
 
@@ -383,44 +376,42 @@ void Engine::computePathAStar() {
 			break;
 		}
 
-		Node currentNode = this->AStarList.front();
+		Node* currentNode = this->AStarList.front();
 
-		if (currentNode.index == this->targetIDX) {
+		if (currentNode == this->targetNode) {
 			this->targetFound = true;
 			break;
 		}
 
-		if (this->nodes.at(currentNode.index).getType() == "impassable") {
+		if (currentNode->getType() == "impassable") {
 			continue;
 		}
 		else {
-			if (currentNode.index == this->startIDX) {
-				this->nodes.at(currentNode.index).setType("visited");
-				this->nodes.at(currentNode.index).setColors("start");
+			if (currentNode == this->startNode) {
+				currentNode->setType("visited");
+				currentNode->setColors("start");
 			}
-			else if (currentNode.index == this->targetIDX) {
-				this->nodes.at(currentNode.index).setType("visited");
-				this->nodes.at(currentNode.index).setColors("target");
+			else if (currentNode == this->targetNode) {
+				currentNode->setType("visited");
+				currentNode->setColors("target");
 			}
 			else {
-				this->nodes.at(currentNode.index).setType("visited");
+				currentNode->setType("visited");
 			}
 
 		}
 
 
-		for (Node neighbor : getNeighbors(this->nodes.at(currentNode.index))) {
+		for (Node* neighbor : getNeighbors(currentNode)) {
 
 
-			if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+			if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
 				this->AStarList.push_back(neighbor);
 			}
 
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			std::cout << "One" << std::endl;
-			float distance = this->nodes.at(currentNode.index).fLocalGoal + this->nodes.at(neighbor.index).cost;
-			std::cout << "Two" << std::endl;
+			float distance = currentNode->fLocalGoal + neighbor->cost;
 			
 			//float distance = this->nodes.at(currentNode.index).cost_so_far + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
 
@@ -430,14 +421,12 @@ void Engine::computePathAStar() {
 			// cost_so_far -> fLocalGoal
 			// priority -> fGlobalGoal
 
-			if (distance < neighbor.fLocalGoal) {
-				std::cout << "Three" << std::endl;
-				this->nodes.at(neighbor.index).cameFrom = currentNode.index;
-				this->nodes.at(neighbor.index).fLocalGoal = distance;
+			if (distance < neighbor->fLocalGoal) {
+				neighbor->cameFrom = currentNode;
+				neighbor->fLocalGoal = distance;
 				//this->nodes.at(neighbor.index).cost_so_far = distance;
 
-				this->nodes.at(neighbor.index).fGlobalGoal = distance + heuristic(this->nodes.at(neighbor.index), this->nodes.at(this->targetIDX));
-				std::cout << "Four" << std::endl;
+				neighbor->fGlobalGoal = distance + heuristic(neighbor, this->targetNode);
 			}
 
 			//clearWindow();
@@ -446,16 +435,14 @@ void Engine::computePathAStar() {
 
 		}
 
-		if (currentNode.index == this->targetIDX) {
+		if (currentNode == this->targetNode) {
 			break;
 		}
 	}
-
-	std::cout << "done";
 }
 
 void Engine::computePathBFS() {
-	std::vector<int> doneNodes;
+	std::vector<Node*> doneNodes;
 
 	while (!this->frontier.empty()) {
 
@@ -478,38 +465,48 @@ void Engine::computePathBFS() {
 		}
 
 		bool found = false;
+		bool shouldContinue = false;
 
-		Node currentNode = this->frontier.front();
+		Node* currentNode = this->frontier.front();
 
-		for (int idx : doneNodes) {
-			if (idx == currentNode.index || idx == this->targetIDX) {
+		for (Node* node : doneNodes) {
+			//if (node == currentNode || node == this->targetNode) {
+			if (node == this->targetNode) {
 				found = true;
+				break;
+			}
+			else if (node == currentNode) {
+				shouldContinue = true;
 				break;
 			}
 		}
 
+		if (shouldContinue) {
+			continue;
+		}
+
 		if (!found) {
-			for (Node neighbor : getNeighbors(currentNode)) {
+			for (Node* neighbor : getNeighbors(currentNode)) {
 
-				if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+				if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
 
-					if (neighbor.getType() == "target") {
-						this->nodes.at(neighbor.index).setType("visited");
-						this->nodes.at(neighbor.index).setColors("target");
+					if (neighbor->getType() == "target") {
+						neighbor->setType("visited");
+						neighbor->setColors("target");
 					}
 					else {
-						this->nodes.at(neighbor.index).setType("visited");
+						neighbor->setType("visited");
 					}
 
-					this->nodes.at(neighbor.index).cameFrom = currentNode.index;
-					this->frontier.push(this->nodes.at(neighbor.index));
+					neighbor->cameFrom = currentNode;
+					this->frontier.push(neighbor);
 					clearWindow();
 					updateGrid();
 					updateRenderer();
 				}
 			}
 
-			doneNodes.push_back(currentNode.index);
+			doneNodes.push_back(currentNode);
 		}
 
 		this->frontier.pop();
@@ -517,7 +514,10 @@ void Engine::computePathBFS() {
 }
 
 void Engine::computePathGBFS() {
-	std::vector<int> doneNodes;
+	std::vector<Node*> doneNodes;
+
+	bool found = false;
+	bool shouldContinue = false;
 
 	while (!this->frontierGBFS.empty()) {
 
@@ -539,86 +539,79 @@ void Engine::computePathGBFS() {
 
 		}
 
-		bool found = false;
-
-		int currentNodeIDX = this->frontierGBFS.begin()->second;
+		Node* currentNode = this->frontierGBFS.begin()->second;
 		this->frontierGBFS.erase(this->frontierGBFS.begin());
 
-		for (int idx : doneNodes) {
-			if (idx == currentNodeIDX || idx == this->targetIDX) {
+		for (Node* node : doneNodes) {
+			//if (node == currentNode || node == this->targetNode) {
+			if (node == this->targetNode) {
 				found = true;
 				break;
 			}
+			else if (node == currentNode) {
+				shouldContinue = true;
+				break;
+			}
+
 		}
 
-		
+		if (shouldContinue) {
+			shouldContinue = false;
+			continue;
+		}
 
 		if (!found) {
-			for (Node neighbor : getNeighbors(this->nodes.at(currentNodeIDX))) {
+			for (Node* neighbor : getNeighbors(currentNode)) {
 
-				if (neighbor.getType() != "impassable" && neighbor.getType() != "visited") {
+				if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
 
-					if (neighbor.getType() == "target") {
-						this->nodes.at(neighbor.index).setType("visited");
-						this->nodes.at(neighbor.index).setColors("target");
+					if (neighbor->getType() == "target") {
+						neighbor->setType("visited");
+						neighbor->setColors("target");
 					}
 					else {
-						this->nodes.at(neighbor.index).setType("visited");
+						neighbor->setType("visited");
 					}
 
-					this->nodes.at(neighbor.index).cameFrom = currentNodeIDX;
-					this->frontierGBFS.insert(std::make_pair(heuristic(this->nodes.at(this->targetIDX), this->nodes.at(neighbor.index)), neighbor.index));
+					neighbor->cameFrom = currentNode;
+
+					double h = heuristic(this->targetNode, neighbor);
+
+					this->frontierGBFS.insert(std::make_pair(h, neighbor));
 					clearWindow();
 					updateGrid();
 					updateRenderer();
 				}
 			}
 
-			doneNodes.push_back(currentNodeIDX);
+			doneNodes.push_back(currentNode);
 		}
+	
 	}
 }
 
 void Engine::resolvePath() {
 
-	this->path = std::vector<int>();
+	this->path = std::vector<Node*>();
 
-	int target = this->targetIDX;
+	Node* currentNode = this->targetNode;
 
-	Node currentNode = this->nodes.at(target);
-
-	if (!this->costMode) {
-		while (currentNode.index != this->nodes.at(this->startIDX).index) {
-			this->path.push_back(currentNode.index);
-			currentNode = this->nodes.at(currentNode.cameFrom);
-		}
-
-		this->path.push_back(this->startIDX);
-
-		this->complete = true;
-	}
-	else if (this->costMode) {
-		
-		while (target != 0) {
-			path.push_back(target);
-			target = this->nodes.at(target).cameFrom;
-		}
-
-		this->complete = true;
+	while (currentNode != this->startNode) {
+		this->path.push_back(currentNode);
+		currentNode = currentNode->cameFrom;
 	}
 
+	this->path.push_back(this->startNode);
+	this->complete = true;
 }
 
 void Engine::drawPath() {
-
-	for (int i = 0; i < this->nodes.size(); i++) {
-		
-		if (this->nodes.at(i).getType() == "visited") {
-
+	for (Node* node : this->nodes) {
+		if (node->getType() == "visited") {
 			bool isPath = false;
 
-			for (int j = 0; j < this->path.size(); j++) {
-				if (i == this->path.at(j)) {
+			for (Node* pathNode : this->path) {
+				if (node == pathNode) {
 					isPath = true;
 					break;
 				}
@@ -626,20 +619,19 @@ void Engine::drawPath() {
 
 			if (!isPath) {
 				if (this->costMode) {
-					double cost = this->nodes.at(i).cost;
-					this->nodes.at(i).setType("passable");
-					this->nodes.at(i).cost = cost;
+					float cost = node->cost;
+					node->setType("passable");
+					node->cost = cost;
 				}
-				else {
-					this->nodes.at(i).setType("passable");
+				else if (!this->costMode) {
+					node->setType("passable");
 				}
-
 			}
-			else if (isPath && this->startIDX == i) {
-				this->nodes.at(this->startIDX).setType("start");
+			else if (isPath && node == this->startNode) {
+				this->startNode->setType("start");
 			}
-			else if (isPath && this->targetIDX == i) {
-				this->nodes.at(this->targetIDX).setType("target");
+			else if (isPath && node == this->targetNode) {
+				this->targetNode->setType("target");
 			}
 		}
 	}
@@ -650,7 +642,7 @@ void Engine::drawPath() {
 void Engine::setViewOnly(bool status) {
 	if (status) {
 		this->viewOnly = true;
-		this->nodes.at(this->currentIndex).setType(this->nodes.at(currentIndex).getType());
+		this->lastNode->setType(this->lastNode->getType());
 	}
 	else {
 		this->viewOnly = false;
@@ -670,28 +662,26 @@ void Engine::setCostMode(bool costMode) {
 	}
 }
 
-std::vector<Node> Engine::getNeighbors(Node node) {
-	int nodeIdx = node.index;
+std::vector<Node*> Engine::getNeighbors(Node* node) {
+	std::vector<Node*> neighbors;
 
-	std::vector<Node> neighbors;
-
-	if (nodeIdx > this->nodesPerRowIDX) {
-		Node topNeighbor = this->nodes.at(nodeIdx - (this->nodesPerRowIDX + 1));
+	if (node->index > this->nodesPerRowIDX) {
+		Node* topNeighbor = this->nodes.at(node->index - (this->nodesPerRowIDX + 1));
 		neighbors.push_back(topNeighbor);
 	}
 
-	if (nodeIdx <= this->nodeCountIDX - this->nodesPerRowIDX - 1) {
-		Node bottomNeighbor = this->nodes.at(nodeIdx + this->nodesPerRowIDX + 1);
+	if (node->index <= this->nodeCountIDX - this->nodesPerRowIDX - 1) {
+		Node* bottomNeighbor = this->nodes.at(node->index + this->nodesPerRowIDX + 1);
 		neighbors.push_back(bottomNeighbor);
 	}
 	
-	if (nodeIdx % (this->nodesPerRowIDX + 1) != 0) {
-		Node leftNeighbor = this->nodes.at(nodeIdx - 1);
+	if (node->index % (this->nodesPerRowIDX + 1) != 0) {
+		Node* leftNeighbor = this->nodes.at(node->index - 1);
 		neighbors.push_back(leftNeighbor);
 	}
 
-	if (!(nodeIdx % (this->nodesPerRowIDX + 1) == 19)) {
-		Node rightNeighbor = this->nodes.at(nodeIdx + 1);
+	if (!(node->index % (this->nodesPerRowIDX + 1) == 19)) {
+		Node* rightNeighbor = this->nodes.at(node->index + 1);
 		neighbors.push_back(rightNeighbor);
 	}
 
@@ -722,6 +712,6 @@ SDL_Event Engine::getEvent() {
 	return this->event;
 }
 
-int Engine::getCurrentNode() {
-	return this->newIndex;
+Node* Engine::getCurrentNode() {
+	return this->currentNode;
 }
