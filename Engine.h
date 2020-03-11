@@ -22,7 +22,6 @@ private:
 	// Custom classes
 	SDL_Window* window; // Window pointer.
 	SDL_Renderer* renderer; // Renderer pointer.
-	SDL_Surface* surface; // Surface pointer.
 	SDL_Event event; // Event variable.
 
 public:
