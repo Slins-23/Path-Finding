@@ -7,61 +7,82 @@
 class Engine
 {
 private:
-	// Misc.
-	const char* TITLE = "A* Path Finding Algorithm"; // Window title.
-
-	// Booleans
-	bool loaded = false; // Whether the engine was loaded.
-
-	// Integers
-	int WIN_W = 800; // Window width.
-	int WIN_H = 600; // Window hegiht.
-	Node* lastNode = nullptr; // Last hovered over Node's index.
-	Node* currentNode = nullptr; // Currently hovered over Node's index.
-
-	// Custom classes
+	// SDL
 	SDL_Window* window; // Window pointer.
 	SDL_Renderer* renderer; // Renderer pointer.
 	SDL_Event event; // Event variable.
+	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
+	void drawPath(); // Draws the path found from the above function.
+	void drawNode(Node* node); // Draws the Node passed as an argument.
+	void updateCost();
 
-public:
 	// Fonts
 	TTF_Font* cost_font; // Font for the cost.
 
 	// Nodes
-	Node* startNode = nullptr;
-	Node* targetNode = nullptr;
-	Node* lastNodeChanged = nullptr;
+	Node* last_node_changed = nullptr; // Last Node refered to when the mouse focus changes to another Node.
+	Node* start_node = nullptr;
+	Node* target_node = nullptr;
+	Node* last_node = nullptr; // Last hovered over Node's index.
+	Node* current_node = nullptr; // Currently hovered over Node's index.
 
 	// Arrays
 	std::vector<Node*> nodes; // All nodes are stored in this array.
 	std::vector<Node*> path; // The path indexes gets stored in this array once it's found.
 
-	// Booleans
-	bool reset = false; // Whether the Nodes should be reset.
-	bool paused = false; // Whether the path finding is paused.
-	bool playing = false; // Whether the path finding is playing.
-	bool pickStart = false; // If the current selection mode is starting point.
-	bool pickTarget = false; // If the current selection mode is target point.
-	bool viewOnly = false; // If current selection mode is view-only.
-	bool costMode = false; // If current path finding mode is using costs or not.
-	bool isHeld = false; // Whether the left mouse button is being held or not.
-	bool complete = false; // Whether the path finding has been completed.
-	bool mode_changed = false; // Whether there was a change in the path finding modes.
-	bool targetFound = false; // Whether the target Node has been visited while trying to find a path.
-	bool useAStar = true; // Whether the A-Star algorithm is being used or not.
-	bool useGBFS = true; // Whether the Greedy Best-First Search algorithm is being used or not.
-
-	// Integers
-	int nodesPerRowIDX = (int)(this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
-	int nodesPerColIDX = (int)(this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
-	int nodeCountIDX = (nodesPerRowIDX + 1) * (nodesPerColIDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
-
 	// Priority Queues
 	std::queue<Node*> frontier; // Nodes queue for Breadth-First Search.
-	std::set<std::pair<double, Node*>> frontierPQ; // Nodes priority queue for Dijkstra's algorithm.
-	std::set<std::pair<int, Node*>> frontierGBFS; // Nodes priority queue for Greedy Best-First Search.
-	std::list<Node*> AStarList; // Nodes priority queue for A*.
+	std::set<std::pair<double, Node*>> frontier_pq; // Nodes priority queue for Dijkstra's algorithm.
+	std::set<std::pair<int, Node*>> frontier_gbfs; // Nodes priority queue for Greedy Best-First Search.
+	std::list<Node*> AStar_list; // Nodes priority queue for A*.
+
+	// Algorithms
+	void computePathBFS(); // Breadth-First Search algorithm.
+	void computePathGBFS(); // Greedy Best-First Search algorithm.
+	void computePathDijkstra(); // Dijkstra's algorithm.
+	void computePathAStar(); // A* algorithm.
+	void resolvePath(); // Finds the path, starting from ther target Node.	
+	void drawGrid();
+	void resetGrid();
+	double heuristic(Node* a, Node* b); // Heuristic function.
+
+	// Getters
+	std::vector<Node*> getNeighbors(Node* node); // Finds all AXIS neighbors for the given Node.
+
+	// Booleans
+	bool loaded = false; // Whether the engine was loaded.
+	bool paused = false; // Whether the path finding is paused.
+	bool playing = false; // Whether the path finding is playing.
+	bool pick_start = false; // If the current selection mode is starting point.
+	bool pick_target = false; // If the current selection mode is target point.
+	bool view_only = false; // If current selection mode is view-only.
+	bool cost_mode = false; // If current path finding mode is using costs or not.
+	bool is_held = false; // Whether the left mouse button is being held or not.
+	bool complete = false; // Whether the path finding has been completed.
+	bool mode_changed = false; // Whether there was a change in the path finding modes.
+	bool target_found = false; // Whether the target Node has been visited while trying to find a path.
+	bool use_AStar = true; // Whether the A-Star algorithm is being used or not.
+	bool use_GBFS = true; // Whether the Greedy Best-First Search algorithm is being used or not.
+
+	// Integers
+	int WIN_W = 800; // Window width.
+	int WIN_H = 600; // Window hegiht.
+	int nodes_per_row_IDX = (int)(this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
+	int nodes_per_col_IDX = (int)(this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
+	int node_count_IDX = (nodes_per_row_IDX + 1) * (nodes_per_col_IDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
+	int mouseX; // Where the mouse X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
+	int mouseY; // Where the mouse Y position gets stored. Updates everytime the mouse is moved. In the range of your display height.
+	int xPos;  // Where the window X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
+	int yPos;  // Where the window X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
+
+	// Decrements the window position from the display mouse position in order to get the below values.
+	int newX = 0; // Where the mouse X position relative to the window's position. Updates everytime the mouse is moved. In the range of the window width.
+	int newY = 0; // Where the mouse Y position relative to the window's position. Updates everytime the mouse is moved. In the range of the window height.
+
+	// Misc.
+	const char* TITLE = "A* Path Finding Algorithm"; // Window title.
+
+public:
 
 	// Environment
 	Engine(); // Engine constructor with default values and no arguments.
@@ -70,35 +91,25 @@ public:
 	~Engine();
 	int load(); // Sets up the environment.
 	void start(); // Runs the algorithm.
-	void close(); // Closes the environment.
+	int close(); // Closes the environment.
+	void reset(); // Resets the grid.
+	void changeAlgorithm(); // Changes the algorithm.
+	void toggleCostMode();
+	void toggleViewOnly();
+	void toggleTargetMode();
+	void toggleStartMode();
+	void handleMouse(bool button_down, int button_pressed);
+	void handleMouseClick();
+	void updateMousePosition();
 
 	// Getters
-	std::vector<Node*> getNeighbors(Node* node); // Finds all AXIS neighbors for the given Node.
-	const char* getTitle(); // Returns the window title.
-	int getWidth(); // Returns the window width.
-	int getHeight(); // Returns the window height.
-	Node* getCurrentNode(); // Returns the current hovered over Node's index.
-	SDL_Window& getWindow(); // Returns reference to the window.
-	SDL_Renderer& getRenderer(); // Returns reference to the renderer.
-	SDL_Event getEvent(); // Returns the event.
-
-	// Setters
-	void setViewOnly(bool status); // Sets view-only to the argument.
-	void setCostMode(bool costMode); // Sets cost-mode to the argument.
-
-	// Algorithms
-	void computePathBFS(); // Breadth-First Search algorithm.
-	void computePathGBFS(); // Greedy Best-First Search algorithm.
-	void computePathDijkstra(); // Dijkstra's algorithm.
-	void computePathAStar(); // A* algorithm.
-	void resolvePath(); // Finds the path, starting from ther target Node.	
-	double heuristic(Node* a, Node* b); // Heuristic function.
+	SDL_Event getEvent();
+	int getWidth();
+	int getHeight();
 
 	// SDL
-	void clearWindow(); // Clears the window.
 	void updateGrid(); // Updates the grid.
 	void updateRenderer(); // Updates the renderer.
-	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
-	void drawPath(); // Draws the path found from the above function.
-	void drawNode(Node* node); // Draws the Node passed as an argument.
+	void clearWindow(); // Clears the window.
+	void clearVisited();
 };

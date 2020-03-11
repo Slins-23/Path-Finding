@@ -41,7 +41,7 @@ private:
 
 public:
 	// Nodes
-	Node* cameFrom = nullptr; // Node from which this Node came from.
+	Node* came_from = nullptr; // Node from which this Node came from.
 
 	// Booleans
 	bool visited = false; // Whether this Node was visited by the algorithm.
@@ -52,8 +52,8 @@ public:
 	// Floats
 	float cost = 1; // Node's cost value / How long it takes to pass through this Node
 	float cost_so_far = INFINITY; // Cost from the starting point to this Node.
-	float fLocalGoal = INFINITY; // Should be cost
-	float fGlobalGoal = INFINITY; // Should be cost_so_far
+	float local_goal = INFINITY; // Should be cost
+	float global_goal = INFINITY; // Should be cost_so_far
 
 	// Node
 	Node(const char* type, int x, int y); // The Node constructor takes in the type of the Node and, respectively, the X and Y coordinates, relative to the display.
