@@ -21,52 +21,41 @@ private:
 
 public:
 
+	// Fonts
 	TTF_Font* cost_font; // Font for the cost.
 
+	// Arrays
 	std::vector<Node> nodes; // All nodes are stored in this array.
 	std::vector<int> path; // The path indexes gets stored in this array once it's found.
 
+	// Booleans
 	bool reset = false; // Whether the Nodes should be reset.
 	bool paused = false; // Whether the path finding is paused.
 	bool playing = false; // Whether the path finding is playing.
-
 	bool pickStart = false; // If the current selection mode is starting point.
 	bool pickTarget = false; // If the current selection mode is target point.
-
 	bool viewOnly = false; // If current selection mode is view-only.
 	bool costMode = false; // If current path finding mode is using costs or not.
-
 	bool isHeld = false; // Whether the left mouse button is being held or not.
-
 	bool complete = false; // Whether the path finding has been completed.
-
 	bool mode_changed = false; // Whether there was a change in the path finding modes.
-
 	bool targetFound = false; // Whether the target Node has been visited while trying to find a path.
-
-	int startIDX = 12345; // Starting Node index.
-	int targetIDX = 12345; // Target Node index.
-
-	int lastNodeChange = 12345; // Which Node index has had a change of focus into the current Node.
-
 	bool useAStar = true; // Whether the A-Star algorithm is being used or not.
 	bool useGBFS = true; // Whether the Greedy Best-First Search algorithm is being used or not.
 
-	std::queue<Node> frontier; // Node frontier for Breadth-First Search.
-
-	std::set<std::pair<double, int>> frontierPQ; // Node frontier for Dijkstra's algorithm.
-
-	std::set<std::pair<int, int>> frontierGBFS; // Node frontier for Greedy Best-First Search.
-
-	std::list<Node> AStarList; // Node frontier for A*.
-
-	int nodesPerRowIDX = (int) (this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
-	int nodesPerColIDX = (int) (this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
-
+	// Integers
+	int startIDX = 12345; // Starting Node index.
+	int targetIDX = 12345; // Target Node index.
+	int lastNodeChange = 12345; // Which Node index has had a change of focus into the current Node.
+	int nodesPerRowIDX = (int)(this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
+	int nodesPerColIDX = (int)(this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
 	int nodeCountIDX = (nodesPerRowIDX + 1) * (nodesPerColIDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
 
-	void updateFrontier(); // Handles the selected algorithm and calls fucntion to update the path once the algorithm is finished.
-	
+	// Priority Queues
+	std::queue<Node> frontier; // Nodes queue for Breadth-First Search.
+	std::set<std::pair<double, int>> frontierPQ; // Nodes priority queue for Dijkstra's algorithm.
+	std::set<std::pair<int, int>> frontierGBFS; // Nodes priority queue for Greedy Best-First Search.
+	std::list<Node> AStarList; // Nodes priority queue for A*.
 
 	// Environment
 	Engine(); // Engine constructor with default values and no arguments.

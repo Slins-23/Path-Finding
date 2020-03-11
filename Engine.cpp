@@ -217,34 +217,49 @@ void Engine::start() {
 			this->AStarList.clear();
 			this->AStarList.push_back(this->nodes.at(this->startIDX));
 			computePathAStar();
+
+			if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
+				resolvePath();
+			}
 		}
 		else if (!this->useAStar) {
 			this->frontierPQ.clear();
 			this->nodes.at(this->startIDX).cost_so_far = 0;
 			this->frontierPQ.insert(std::make_pair(0, this->startIDX));
 			computePathDijkstra();
+
+			if ((this->AStarList.empty() && this->targetIDX != 12345) || this->targetFound) {
+				resolvePath();
+			}
 		}
+
+
 	}
 	else if (!this->costMode) {
 		if (this->useGBFS) {
 			this->frontierGBFS.insert(std::make_pair(0, this->startIDX));
 			computePathGBFS();
+
+			if ((this->frontierGBFS.empty() && this->targetIDX != 12345) || this->targetFound) {
+				resolvePath();
+			}
 		}
 		else if (!this->useGBFS) {
 			//this->nodes.at(this->startIDX).setType("visited");
 			//this->nodes.at(this->startIDX).setColors("start");
 			this->frontier.push(this->nodes.at(this->startIDX));
 			computePathBFS();
+
+			if ((this->frontier.empty() && this->targetIDX != 12345) || this->targetFound) {
+				resolvePath();
+			}
 		}
+
+
 	}
-	
-	updateFrontier();
-	resolvePath();
 }
 
 double Engine::heuristic(Node a, Node b) {
-	//return abs(a.getX() - b.getX()) + abs((a.getY() - b.getY()));
-	
 	return sqrtf((a.getX() - b.getX()) * (a.getX() - b.getX()) + (a.getY() - b.getY()) * (a.getY() - b.getY()));
 }
 
@@ -361,6 +376,11 @@ void Engine::computePathAStar() {
 		}
 
 		Node currentNode = this->AStarList.front();
+
+		if (currentNode.index == this->targetIDX) {
+			this->targetFound = true;
+			break;
+		}
 
 		if (this->nodes.at(currentNode.index).getType() == "impassable") {
 			continue;
