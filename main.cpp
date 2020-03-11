@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 						}
 						else if (!engine.costMode) {
 							engine.useGBFS = !engine.useGBFS;
-							std::cout << "Current algorithm: " << (engine.useGBFS ? "A*" : "Dijkstra's") << std::endl;
+							std::cout << "Current algorithm: " << (engine.useGBFS ? "Greedy Best-First Search" : "Breadth-First Search") << std::endl;
 						}
 						break;
 

@@ -251,8 +251,8 @@ void Engine::start() {
 			}
 		}
 		else if (!this->useGBFS) {
-			//this->nodes.at(this->startIDX).setType("visited");
-			//this->nodes.at(this->startIDX).setColors("start");
+			this->nodes.at(this->startIDX).setType("visited");
+			this->nodes.at(this->startIDX).setColors("start");
 			this->frontier.push(this->nodes.at(this->startIDX));
 			computePathBFS();
 
@@ -263,6 +263,8 @@ void Engine::start() {
 
 
 	}
+
+	drawPath();
 }
 
 double Engine::heuristic(Node a, Node b) {
