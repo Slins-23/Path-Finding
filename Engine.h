@@ -18,9 +18,7 @@ private:
 	bool loaded = false; // Whether the engine was loaded.
 	int currentIndex = 12345; // Last hovered over Node's index.
 	int newIndex = 0; // Currently hovered over Node's index.
-
 public:
-
 	// Fonts
 	TTF_Font* cost_font; // Font for the cost.
 
@@ -85,8 +83,8 @@ public:
 	void computePathGBFS(); // Greedy Best-First Search algorithm.
 	void computePathDijkstra(); // Dijkstra's algorithm.
 	void computePathAStar(); // A* algorithm.
-	double heuristic(Node a, Node b); // Heuristic function.
 	void resolvePath(); // Finds the path, starting from ther target Node.	
+	double heuristic(Node a, Node b); // Heuristic function.
 
 	// SDL
 	void clearWindow(); // Clears the window.
