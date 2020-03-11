@@ -3,6 +3,8 @@
 Engine::Engine() {
 	this->window = NULL;
 	this->renderer = NULL;
+	this->cost_font = NULL;
+	this->event = SDL_Event();
 
 	std::cout << "Successfully initialized engine." << std::endl;
 }
@@ -12,6 +14,8 @@ Engine::Engine(int width, int height) {
 	this->WIN_H = height;
 	this->window = NULL;
 	this->renderer = NULL;
+	this->cost_font = NULL;
+	this->event = SDL_Event();
 
 	std::cout << "Successfully initialized engine." << std::endl;
 }
@@ -22,6 +26,8 @@ Engine::Engine(const char* title, int width, int height) {
 	this->WIN_H = height;
 	this->window = NULL;
 	this->renderer = NULL;
+	this->cost_font = NULL;
+	this->event = SDL_Event();
 
 	std::cout << "Successfully initialized engine." << std::endl;
 }
@@ -567,32 +573,6 @@ void Engine::computePathGBFS() {
 			}
 
 			doneNodes.push_back(currentNodeIDX);
-		}
-	}
-}
-
-void Engine::updateFrontier() {
-
-	if (this->costMode) {
-		if (this->useAStar) {
-			computePathAStar();
-		}
-		else if (!this->useAStar) {
-			computePathDijkstra();
-		}
-		
-		
-
-		if ((this->frontierPQ.empty() && this->targetIDX != 12345) || this->targetFound) {
-			resolvePath();
-		}
-	}
-	else if (!this->costMode) {
-		//computePathBFS();
-		computePathGBFS();
-
-		if (this->frontier.empty() && this->targetIDX != 12345) {
-			resolvePath();
 		}
 	}
 }
