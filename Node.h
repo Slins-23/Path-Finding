@@ -19,19 +19,24 @@ struct colors {
 class Node
 {
 private:
-	bool passable; // Whether the Node can be passed through.
+	// Booleans
+	bool passable = false; // Whether the Node can be passed through.
 	bool target = false; // If this Node is the target point.
 	bool start = false; // If this Node is the start point.
+
+	// Integers
 	int x; // Node X position within the window.
 	int y; // Node Y position within the window.
 	int width = 40; // Node's width.
 	int height = 40; // Node's height.
 
+	// Uint8
 	Uint8 red; // Node's red color.
 	Uint8 green; // Node's green color.
 	Uint8 blue; // Node's blue color.
 	Uint8 alpha; // Node's alpha value.
 	
+	// Misc.
 	const char* type; // Node's type. ("passable" || "impassable" || "start" || "target" || "visited")
 
 public:
@@ -83,4 +88,3 @@ public:
 		return this->cost_so_far == other.cost_so_far;
 	}
 };
-

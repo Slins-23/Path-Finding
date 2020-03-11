@@ -7,17 +7,24 @@
 class Engine
 {
 private:
+	// Misc.
 	const char* TITLE = "A* Path Finding Algorithm"; // Window title.
+
+	// Booleans
+	bool loaded = false; // Whether the engine was loaded.
+
+	// Integers
 	int WIN_W = 800; // Window width.
 	int WIN_H = 600; // Window hegiht.
+	int currentIndex = 12345; // Last hovered over Node's index.
+	int newIndex = 0; // Currently hovered over Node's index.
+
+	// Custom classes
 	SDL_Window* window; // Window pointer.
 	SDL_Renderer* renderer; // Renderer pointer.
 	SDL_Surface* surface; // Surface pointer.
 	SDL_Event event; // Event variable.
-	
-	bool loaded = false; // Whether the engine was loaded.
-	int currentIndex = 12345; // Last hovered over Node's index.
-	int newIndex = 0; // Currently hovered over Node's index.
+
 public:
 	// Fonts
 	TTF_Font* cost_font; // Font for the cost.
