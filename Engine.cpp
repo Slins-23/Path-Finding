@@ -209,33 +209,37 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 
 }
 
-void Engine::play() {
-
-
+void Engine::start() {
 	if (this->costMode) {
 		if (this->useAStar) {
 			this->nodes.at(this->startIDX).fLocalGoal = 0.0f;
 			this->nodes.at(this->startIDX).fGlobalGoal = heuristic(this->nodes.at(this->startIDX), this->nodes.at(this->targetIDX));
 			this->AStarList.clear();
 			this->AStarList.push_back(this->nodes.at(this->startIDX));
+			computePathAStar();
 		}
 		else if (!this->useAStar) {
 			this->frontierPQ.clear();
 			this->nodes.at(this->startIDX).cost_so_far = 0;
 			this->frontierPQ.insert(std::make_pair(0, this->startIDX));
+			computePathDijkstra();
 		}
-
-
 	}
 	else if (!this->costMode) {
-		//this->nodes.at(this->startIDX).setType("visited");
-		//this->nodes.at(this->startIDX).setColors("start");
-		//this->frontier.push(this->nodes.at(this->startIDX));
-		this->frontierGBFS.insert(std::make_pair(0, this->startIDX));
+		if (this->useGBFS) {
+			this->frontierGBFS.insert(std::make_pair(0, this->startIDX));
+			computePathGBFS();
+		}
+		else if (!this->useGBFS) {
+			//this->nodes.at(this->startIDX).setType("visited");
+			//this->nodes.at(this->startIDX).setColors("start");
+			this->frontier.push(this->nodes.at(this->startIDX));
+			computePathBFS();
+		}
 	}
 	
 	updateFrontier();
-	setPath();
+	resolvePath();
 }
 
 double Engine::heuristic(Node a, Node b) {
@@ -320,11 +324,6 @@ void Engine::computePathDijkstra() {
 			}
 		}
 	}
-}
-
-double Engine::distance(Node a, Node b) {
-	//return heuristic(a, b) + 
-	return 0;
 }
 
 void Engine::computePathAStar() {

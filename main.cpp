@@ -84,6 +84,10 @@ int main(int argc, char* argv[]) {
 							engine.useAStar = !engine.useAStar;
 							std::cout << "Current algorithm: " << (engine.useAStar ? "A*" : "Dijkstra's") << std::endl;
 						}
+						else if (!engine.costMode) {
+							engine.useGBFS = !engine.useGBFS;
+							std::cout << "Current algorithm: " << (engine.useGBFS ? "A*" : "Dijkstra's") << std::endl;
+						}
 						break;
 
 					case SDL_SCANCODE_K:
@@ -127,7 +131,7 @@ int main(int argc, char* argv[]) {
 						engine.playing = true;
 						engine.paused = false;
 
-						engine.play();
+						engine.start();
 
 						engine.playing = false;
 						engine.setViewOnly(false);

@@ -50,6 +50,7 @@ public:
 	int lastNodeChange = 12345; // Which Node index has had a change of focus into the current Node.
 
 	bool useAStar = true; // Whether the A-Star algorithm is being used or not.
+	bool useGBFS = true; // Whether the Greedy Best-First Search algorithm is being used or not.
 
 	std::queue<Node> frontier; // Node frontier for Breadth-First Search.
 
@@ -64,43 +65,45 @@ public:
 
 	int nodeCountIDX = (nodesPerRowIDX + 1) * (nodesPerColIDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
 
+	void updateFrontier(); // Handles the selected algorithm and calls fucntion to update the path once the algorithm is finished.
+	
+
+	// Environment
 	Engine(); // Engine constructor with default values and no arguments.
 	Engine(int width, int height); // Engine constructor with default title but passing the window's width and height as arguments.
 	Engine(const char* title, int width, int height); // Engine constructor without default values, window's title, width, and height as arguments.
 	~Engine();
+	int load(); // Sets up the environment.
+	void start(); // Runs the algorithm.
+	void close(); // Closes the environment.
 
+	// Getters
+	std::vector<Node> getNeighbors(Node node); // Finds all AXIS neighbors for the given Node.
 	const char* getTitle(); // Returns the window title.
 	int getWidth(); // Returns the window width.
 	int getHeight(); // Returns the window height.
+	int getCurrentNode(); // Returns the current hovered over Node's index.
+	SDL_Window& getWindow(); // Returns reference to the window.
+	SDL_Renderer& getRenderer(); // Returns reference to the renderer.
+	SDL_Event getEvent(); // Returns the event.
 
-	void close(); // Closes the environment.
-	void clearWindow(); // Clears the window.
-	void drawNode(Node node); // Draws the Node passed as an argument.
-	void updateRenderer(); // Updates the renderer.
-	void updateGrid(); // Updates the grid.
-	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the position passed as an argument and previous one, if necessary.
-	void play(); // Runs the algorithm.
+	// Setters
+	void setViewOnly(bool status); // Sets view-only to the argument.
+	void setCostMode(bool costMode); // Sets cost-mode to the argument.
 
+	// Algorithms
 	void computePathBFS(); // Breadth-First Search algorithm.
 	void computePathGBFS(); // Greedy Best-First Search algorithm.
 	void computePathDijkstra(); // Dijkstra's algorithm.
 	void computePathAStar(); // A* algorithm.
-	void updateFrontier(); // Handles the selected algorithm and calls fucntion to update the path once the algorithm is finished.
-	void resolvePath(); // Finds the path, starting from ther target Node.
-	void drawPath(); // Draws the path found from the above function.
-	void setViewOnly(bool status); // Sets view-only to the argument.
-	void setCostMode(bool costMode); // Sets cost-mode to the argument.
-	
-	int load(); // Sets up the environment.
-	int getCurrentNode(); // Returns the current hovered over Node's index.
-	
 	double heuristic(Node a, Node b); // Heuristic function.
-	
-	std::vector<Node> getNeighbors(Node node); // Finds all AXIS neighbors for the given Node.
+	void resolvePath(); // Finds the path, starting from ther target Node.	
 
-	
-
-	SDL_Window& getWindow(); // Returns reference to the window.
-	SDL_Renderer& getRenderer(); // Returns reference to the renderer.
-	SDL_Event getEvent(); // Returns the event.
+	// SDL
+	void clearWindow(); // Clears the window.
+	void updateGrid(); // Updates the grid.
+	void updateRenderer(); // Updates the renderer.
+	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
+	void drawPath(); // Draws the path found from the above function.
+	void drawNode(Node node); // Draws the Node passed as an argument.
 };
