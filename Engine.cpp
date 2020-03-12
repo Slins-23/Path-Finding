@@ -367,7 +367,6 @@ void Engine::computePathDijkstra() {
 }
 
 void Engine::computePathAStar() {
-	int idx = 0;
 	while (!this->open.empty()) {
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
@@ -399,7 +398,6 @@ void Engine::computePathAStar() {
 		this->open.pop_front();
 
 		current_node->setType("visited");
-		current_node->setColors("impassable");
 
 		if (current_node->getType() == "target") {
 			current_node->setColors("target");
