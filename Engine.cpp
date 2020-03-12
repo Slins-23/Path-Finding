@@ -220,8 +220,8 @@ void Engine::start() {
 		}
 		else if (!this->use_AStar) {
 			if (!was_paused) {
-				this->frontier_pq.clear();
 				this->start_node->cost_so_far = 0;
+				this->frontier_pq.clear();
 				this->frontier_pq.insert(std::make_pair(0, this->start_node));
 			}
 
@@ -277,8 +277,16 @@ void Engine::start() {
 
 }
 
-double Engine::heuristic(Node* a, Node* b) {
-	return sqrtf((a->getX() - b->getX()) * (a->getX() - b->getX()) + (a->getY() - b->getY()) * (a->getY() - b->getY()));
+float Engine::heuristic(Node* a, Node* b) {
+	return abs(a->getX() - b->getX()) + abs(a->getY() - b->getY());
+	//return sqrtf((a->getX() - b->getX()) * (a->getX() - b->getX()) + (a->getY() - b->getY()) * (a->getY() - b->getY()));
+}
+
+float Engine::moveCost(Node* a, Node* b) {
+	float cost_a = a->cost;
+	float cost_b = b->cost;
+
+	return cost_a + cost_b;
 }
 
 void Engine::computePathDijkstra() {
@@ -381,7 +389,7 @@ void Engine::computePathAStar() {
 
 		this->AStar_list.sort([](const Node* a, const Node* b) { return a->global_goal < b->global_goal;  });
 
-		if (!this->AStar_list.empty() && this->AStar_list.front()->getType() == "visited") {
+		while (!this->AStar_list.empty() && this->AStar_list.front()->getType() == "visited") {
 			this->AStar_list.pop_front();
 		}
 
@@ -389,66 +397,54 @@ void Engine::computePathAStar() {
 			break;
 		}
 
-		Node* currentNode = this->AStar_list.front();
+		Node* current_node = this->AStar_list.front();
 
-		if (currentNode == this->target_node) {
+		if (current_node == this->target_node) {
 			this->target_found = true;
 			break;
 		}
 
-		if (currentNode->getType() == "impassable") {
+		if (current_node->getType() == "impassable") {
 			continue;
 		}
 		else {
-			if (currentNode == this->start_node) {
-				currentNode->setType("visited");
-				currentNode->setColors("start");
+			if (current_node == this->start_node) {
+				current_node->setType("visited");
+				current_node->setColors("start");
 			}
-			else if (currentNode == this->target_node) {
-				currentNode->setType("visited");
-				currentNode->setColors("target");
+			else if (current_node == this->target_node) {
+				current_node->setType("visited");
+				current_node->setColors("target");
 			}
 			else {
-				currentNode->setType("visited");
+				current_node->setType("visited");
 			}
 
 		}
 
 
-		for (Node* neighbor : getNeighbors(currentNode)) {
-
-
+		for (Node* neighbor : getNeighbors(current_node)) {
 			if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
 				this->AStar_list.push_back(neighbor);
 			}
 
 			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			float distance = currentNode->local_goal + neighbor->cost;
+			float distance = current_node->local_goal + moveCost(current_node, neighbor);
 			
-			//float distance = this->nodes.at(currentNode.index).cost_so_far + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-
-			
-			// distance -> fPossiblyLowerGoal -> new_cost
-
-			// cost_so_far -> fLocalGoal
-			// priority -> fGlobalGoal
-
-			if (distance < neighbor->local_goal) {
-				neighbor->came_from = currentNode;
+			if (neighbor == this->AStar_list.back() || distance < neighbor->local_goal) {
+				std::cout << moveCost(current_node, neighbor) << std::endl;
+				neighbor->came_from = current_node;
 				neighbor->local_goal = distance;
-				//this->nodes.at(neighbor.index).cost_so_far = distance;
 
-				neighbor->global_goal = distance + heuristic(neighbor, this->target_node);
+				neighbor->global_goal = neighbor->local_goal + heuristic(neighbor, this->target_node);
 			}
 
-			//clearWindow();
-			//updateGrid();
-			//updateRenderer();
-
+			clearWindow();
+			updateGrid();
+			updateRenderer();
 		}
 
-		if (currentNode == this->target_node) {
+		if (current_node == this->target_node) {
 			break;
 		}
 	}
@@ -581,6 +577,10 @@ void Engine::computePathGBFS() {
 					if (neighbor->getType() == "target") {
 						neighbor->setType("visited");
 						neighbor->setColors("target");
+					}
+					else if (neighbor->getType() == "start") {
+						neighbor->setType("visited");
+						neighbor->setColors("start");
 					}
 					else {
 						neighbor->setType("visited");

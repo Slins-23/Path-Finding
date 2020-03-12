@@ -7,6 +7,9 @@
 class Engine
 {
 private:
+	// Environment
+	void updateCost();
+
 	// SDL
 	SDL_Window* window; // Window pointer.
 	SDL_Renderer* renderer; // Renderer pointer.
@@ -14,7 +17,6 @@ private:
 	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
 	void drawPath(); // Draws the path found from the above function.
 	void drawNode(Node* node); // Draws the Node passed as an argument.
-	void updateCost();
 
 	// Fonts
 	TTF_Font* cost_font; // Font for the cost.
@@ -44,7 +46,9 @@ private:
 	void resolvePath(); // Finds the path, starting from ther target Node.	
 	void drawGrid();
 	void resetGrid();
-	double heuristic(Node* a, Node* b); // Heuristic function.
+	float heuristic(Node* a, Node* b); // Heuristic function.
+	float moveCost(Node* a, Node* b);
+
 
 	// Getters
 	std::vector<Node*> getNeighbors(Node* node); // Finds all AXIS neighbors for the given Node.
@@ -70,10 +74,10 @@ private:
 	int nodes_per_row_IDX = (int)(this->WIN_W / 40 - 1); // How many nodes per row there are. Always decremented -1, as this is used as an index.
 	int nodes_per_col_IDX = (int)(this->WIN_H / 40 - 1); // How many nodes per column there are. Always decremented -1, as this is used as an index.
 	int node_count_IDX = (nodes_per_row_IDX + 1) * (nodes_per_col_IDX + 1) - 1; // How many Nodes there are. Always decremented -1, as this is used as an index.
-	int mouseX; // Where the mouse X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
-	int mouseY; // Where the mouse Y position gets stored. Updates everytime the mouse is moved. In the range of your display height.
-	int xPos;  // Where the window X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
-	int yPos;  // Where the window X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
+	int mouseX = 0; // Where the mouse X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
+	int mouseY = 0; // Where the mouse Y position gets stored. Updates everytime the mouse is moved. In the range of your display height.
+	int xPos = 0;  // Where the window X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
+	int yPos = 0;  // Where the window X position gets stored. Updates everytime the mouse is moved. In the range of your display width.
 
 	// Decrements the window position from the display mouse position in order to get the below values.
 	int newX = 0; // Where the mouse X position relative to the window's position. Updates everytime the mouse is moved. In the range of the window width.
