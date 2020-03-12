@@ -55,6 +55,10 @@ public:
 	float local_goal = INFINITY; // Should be cost
 	float global_goal = INFINITY; // Should be cost_so_far
 
+	float h;
+	float g = INFINITY;
+	float f = INFINITY;
+
 	// Node
 	Node(const char* type, int x, int y); // The Node constructor takes in the type of the Node and, respectively, the X and Y coordinates, relative to the display.
 	~Node();

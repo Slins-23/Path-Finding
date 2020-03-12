@@ -36,7 +36,10 @@ private:
 	std::queue<Node*> frontier; // Nodes queue for Breadth-First Search.
 	std::set<std::pair<double, Node*>> frontier_pq; // Nodes priority queue for Dijkstra's algorithm.
 	std::set<std::pair<int, Node*>> frontier_gbfs; // Nodes priority queue for Greedy Best-First Search.
-	std::list<Node*> AStar_list; // Nodes priority queue for A*.
+	std::set<std::pair<double, Node*>> AStar_list;
+	//std::list<Node*> AStar_list; // Nodes priority queue for A*.
+
+	std::list<Node*> open;
 
 	// Algorithms
 	void computePathBFS(); // Breadth-First Search algorithm.
@@ -47,7 +50,6 @@ private:
 	void drawGrid();
 	void resetGrid();
 	float heuristic(Node* a, Node* b); // Heuristic function.
-	float moveCost(Node* a, Node* b);
 
 
 	// Getters

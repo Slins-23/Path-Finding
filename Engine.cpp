@@ -1,4 +1,9 @@
 #include "Engine.h"
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <algorithm>
+#include <vector>
 #include <exception>
 
 Engine::Engine() {
@@ -206,15 +211,17 @@ void Engine::start() {
 	if (this->cost_mode) {
 		if (this->use_AStar) {
 			if (!was_paused) {
-				this->start_node->local_goal = 0.0f;
-				this->start_node->global_goal = heuristic(this->start_node, this->target_node);
-				this->AStar_list.clear();
-				this->AStar_list.push_back(this->start_node);
+				this->open.clear();
+
+				this->start_node->g = 0;
+				this->start_node->f = this->start_node->g + heuristic(this->start_node, this->target_node);
+
+				this->open.push_back(this->start_node);
 			}
 
 			computePathAStar();
 
-			if (((this->AStar_list.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
+			if (((this->open.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
 				resolvePath();
 			}
 		}
@@ -278,15 +285,8 @@ void Engine::start() {
 }
 
 float Engine::heuristic(Node* a, Node* b) {
-	return abs(a->getX() - b->getX()) + abs(a->getY() - b->getY());
-	//return sqrtf((a->getX() - b->getX()) * (a->getX() - b->getX()) + (a->getY() - b->getY()) * (a->getY() - b->getY()));
-}
-
-float Engine::moveCost(Node* a, Node* b) {
-	float cost_a = a->cost;
-	float cost_b = b->cost;
-
-	return cost_a + cost_b;
+	//return abs(a->getX() - b->getX()) + abs(a->getY() - b->getY());
+	return sqrtf((a->getX() - b->getX()) * (a->getX() - b->getX()) + (a->getY() - b->getY()) * (a->getY() - b->getY()));
 }
 
 void Engine::computePathDijkstra() {
@@ -367,8 +367,8 @@ void Engine::computePathDijkstra() {
 }
 
 void Engine::computePathAStar() {
-	while (!this->AStar_list.empty()) {
-
+	int idx = 0;
+	while (!this->open.empty()) {
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
 			case SDL_KEYDOWN:
@@ -387,65 +387,73 @@ void Engine::computePathAStar() {
 			break;
 		}
 
-		this->AStar_list.sort([](const Node* a, const Node* b) { return a->global_goal < b->global_goal;  });
+		this->open.sort([](const Node* a, const Node* b) { return a->f < b->f;  });
 
-		while (!this->AStar_list.empty() && this->AStar_list.front()->getType() == "visited") {
-			this->AStar_list.pop_front();
-		}
-
-		if (this->AStar_list.empty()) {
-			break;
-		}
-
-		Node* current_node = this->AStar_list.front();
+		Node* current_node = this->open.front();
 
 		if (current_node == this->target_node) {
 			this->target_found = true;
 			break;
 		}
 
-		if (current_node->getType() == "impassable") {
-			continue;
-		}
-		else {
-			if (current_node == this->start_node) {
-				current_node->setType("visited");
-				current_node->setColors("start");
-			}
-			else if (current_node == this->target_node) {
-				current_node->setType("visited");
-				current_node->setColors("target");
-			}
-			else {
-				current_node->setType("visited");
-			}
+		this->open.pop_front();
 
-		}
+		current_node->setType("visited");
+		current_node->setColors("impassable");
 
+		if (current_node->getType() == "target") {
+			current_node->setColors("target");
+		}
+		else if (current_node->getType() == "start") {
+			current_node->setColors("start");
+		}
 
 		for (Node* neighbor : getNeighbors(current_node)) {
-			if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
-				this->AStar_list.push_back(neighbor);
-			}
+			if (neighbor->getType() != "impassable") {
 
-			//float distance = this->nodes.at(currentNode.index).fLocalGoal + heuristic(this->nodes.at(currentNode.index), this->nodes.at(neighbor.index));
-			float distance = current_node->local_goal + moveCost(current_node, neighbor);
-			
-			if (neighbor == this->AStar_list.back() || distance < neighbor->local_goal) {
-				std::cout << moveCost(current_node, neighbor) << std::endl;
-				neighbor->came_from = current_node;
-				neighbor->local_goal = distance;
+				float g;
 
-				neighbor->global_goal = neighbor->local_goal + heuristic(neighbor, this->target_node);
+				if (current_node->g != 0) {
+					g = current_node->g * (neighbor->cost);
+				}
+				else {
+					g = (current_node->g + 2) * (neighbor->cost);
+				}
+
+				if (g < neighbor->g) {
+					neighbor->came_from = current_node;
+					neighbor->g = g;
+					neighbor->f = neighbor->g * heuristic(neighbor, this->target_node);
+
+					bool in_open_set = false;
+
+					for (Node* node : this->open) {
+						if (node == neighbor) {
+							in_open_set = true;
+						}
+					}
+
+					if (!in_open_set) {
+						this->open.push_back(neighbor);
+					}
+				}
+
+				if (neighbor->getType() == "target") {
+					neighbor->setType("visited");
+					neighbor->setColors("target");
+				}
+				else if (neighbor->getType() == "start") {
+					neighbor->setType("visited");
+					neighbor->setColors("start");
+				}
+				else {
+					neighbor->setType("visited");
+				}
 			}
 
 			clearWindow();
 			updateGrid();
 			updateRenderer();
-		}
-
-		if (current_node == this->target_node) {
-			break;
 		}
 	}
 }
@@ -915,24 +923,24 @@ void Engine::clearVisited() {
 std::vector<Node*> Engine::getNeighbors(Node* node) {
 	std::vector<Node*> neighbors;
 
-	if (node->index > this->nodes_per_row_IDX) {
-		Node* top_neighbor = this->nodes.at(node->index - (this->nodes_per_row_IDX + 1));
-		neighbors.push_back(top_neighbor);
-	}
-
-	if (node->index <= this->node_count_IDX - this->nodes_per_row_IDX - 1) {
-		Node* bottom_neighbor = this->nodes.at(node->index + this->nodes_per_row_IDX + 1);
-		neighbors.push_back(bottom_neighbor);
-	}
-	
 	if (node->index % (this->nodes_per_row_IDX + 1) != 0) {
 		Node* left_neighbor = this->nodes.at(node->index - 1);
 		neighbors.push_back(left_neighbor);
 	}
 
+	if (node->index > this->nodes_per_row_IDX) {
+		Node* top_neighbor = this->nodes.at(node->index - (this->nodes_per_row_IDX + 1));
+		neighbors.push_back(top_neighbor);
+	}
+
 	if (!(node->index % (this->nodes_per_row_IDX + 1) == 19)) {
 		Node* right_neighbor = this->nodes.at(node->index + 1);
 		neighbors.push_back(right_neighbor);
+	}
+
+	if (node->index <= this->node_count_IDX - this->nodes_per_row_IDX - 1) {
+		Node* bottom_neighbor = this->nodes.at(node->index + this->nodes_per_row_IDX + 1);
+		neighbors.push_back(bottom_neighbor);
 	}
 
 	return neighbors;
