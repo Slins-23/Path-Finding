@@ -31,6 +31,7 @@ private:
 	// Arrays
 	std::vector<Node*> nodes; // All nodes are stored in this array.
 	std::vector<Node*> path; // The path indexes gets stored in this array once it's found.
+	std::vector<Node*> visited_nodes;
 
 	// Priority Queues
 	std::queue<Node*> frontier; // Nodes queue for Breadth-First Search.

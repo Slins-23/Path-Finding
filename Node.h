@@ -47,7 +47,7 @@ public:
 	bool visited = false; // Whether this Node was visited by the algorithm.
 
 	// Integers
-	int index = 1245; // Node's index.
+	int index = 12345; // Node's index.
 
 	// Floats
 	float cost = 1; // Node's cost value / How long it takes to pass through this Node

@@ -197,6 +197,10 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 void Engine::start() {
 	std::cout << "Started" << std::endl;
 
+	if (this->complete) {
+		clearVisited();
+	}
+
 	bool was_paused = this->paused ? true : false;
 
 	this->view_only = true;
@@ -207,8 +211,9 @@ void Engine::start() {
 		if (this->use_AStar) {
 			if (!was_paused) {
 				this->start_node->g = 0;
-				this->start_node->f = this->start_node->g + (heuristic(this->start_node, this->target_node) / ((this->start_node->getX() + this->start_node->getY()) / 2) );
+				this->start_node->f = this->start_node->g + heuristic(this->start_node, this->target_node);
 
+				this->visited_nodes.clear();
 				this->open.clear();
 				this->open.push_back(this->start_node);
 			}
@@ -222,8 +227,9 @@ void Engine::start() {
 		else if (!this->use_AStar) {
 			if (!was_paused) {
 				this->start_node->cost_so_far = 0;
+
+				this->visited_nodes.clear();
 				this->frontier_pq.clear();
-				
 				this->frontier_pq.insert(std::make_pair(0, this->start_node));
 			}
 
@@ -331,16 +337,21 @@ void Engine::computePathDijkstra() {
 					this->frontier_pq.insert(std::make_pair(neighbor->cost_so_far, neighbor));
 				}
 
-				if (neighbor->getType() == "target") {
-					neighbor->setType("visited");
-					neighbor->setColors("target");
-				}
-				else if (neighbor->getType() == "start") {
-					neighbor->setType("visited");
-					neighbor->setColors("start");
-				}
-				else {
-					neighbor->setType("visited");
+				if (neighbor->getType() != "visited") {
+
+					if (neighbor->getType() == "target") {
+						neighbor->setType("visited");
+						neighbor->setColors("target");
+					}
+					else if (neighbor->getType() == "start") {
+						neighbor->setType("visited");
+						neighbor->setColors("start");
+					}
+					else {
+						neighbor->setType("visited");
+					}
+
+					this->visited_nodes.push_back(neighbor);
 				}
 
 
@@ -386,19 +397,16 @@ void Engine::computePathAStar() {
 		for (Node* neighbor : getNeighbors(current_node)) {
 			if (neighbor->getType() != "impassable") {
 				
-				float g;
-
-				if (current_node->g != 0) {
-					g = current_node->g * (neighbor->cost);
-				}
-				else {
-					g = (current_node->g + 2) * (neighbor->cost);
-				}
+				float g = current_node->g + neighbor->cost;
 
 				if (g < neighbor->g) {
 					neighbor->came_from = current_node;
 					neighbor->g = g;
-					neighbor->f = neighbor->g * heuristic(neighbor, this->target_node);
+
+					int node_width = neighbor->getWidth();
+					int node_height = neighbor->getHeight();
+
+					neighbor->f = neighbor->g + (heuristic(neighbor, this->target_node) / ((node_width + node_height) / 2));
 
 					bool in_open_set = false;
 
@@ -413,16 +421,21 @@ void Engine::computePathAStar() {
 					}
 				}
 
-				if (neighbor->getType() == "target") {
-					neighbor->setType("visited");
-					neighbor->setColors("target");
-				}
-				else if (neighbor->getType() == "start") {
-					neighbor->setType("visited");
-					neighbor->setColors("start");
-				}
-				else {
-					neighbor->setType("visited");
+				if (neighbor->getType() != "visited") {
+
+					if (neighbor->getType() == "target") {
+						neighbor->setType("visited");
+						neighbor->setColors("target");
+					}
+					else if (neighbor->getType() == "start") {
+						neighbor->setType("visited");
+						neighbor->setColors("start");
+					}
+					else {
+						neighbor->setType("visited");
+					}
+
+					this->visited_nodes.push_back(neighbor);
 				}
 			}
 
@@ -669,28 +682,14 @@ void Engine::toggleViewOnly() {
 }
 
 void Engine::toggleTargetMode() {
-	if (!this->view_only && !this->pick_start && this->pick_target) {
-		this->pick_target = false;
-		std::cout << "Entered normal mode." << std::endl;
-	}
-	else {
-		this->view_only = false;
-		this->pick_target = true;
-		this->pick_start = false;
-		std::cout << "Entered target node selection mode." << std::endl;
+	if (!this->view_only) {
+		this->pick_target = !this->pick_target;
 	}
 }
 
 void Engine::toggleStartMode() {
-	if (!this->view_only && this->pick_start && !this->pick_target) {
-		this->pick_target = false;
-		std::cout << "Entered normal mode." << std::endl;
-	}
-	else {
-		this->view_only = false;
-		this->pick_target = false;
-		this->pick_start = true;
-		std::cout << "Entered starting node selection mode." << std::endl;
+	if (!this->view_only) {
+		this->pick_start = !this->pick_start;
 	}
 }
 
@@ -861,33 +860,48 @@ void Engine::changeAlgorithm() {
 }
 
 void Engine::clearVisited() {
-	if (this->complete) {
-		this->complete = false;
+	if (this->complete && this->cost_mode) {
 
-		for (Node* path_node : this->path) {
-			if (this->cost_mode) {
-				float cost = path_node->cost;
-				path_node->setType("passable");
-				path_node->cost = cost;
-				path_node->came_from = nullptr;
-				path_node->g = INFINITY;
-				path_node->f = INFINITY;
-			}
-			else if (!this->cost_mode) {
-				path_node->setType("passable");
-			}
+		for (Node* visited_node : this->visited_nodes) {
+			float cost = visited_node->cost;
+			visited_node->setType("passable");
+			visited_node->cost = cost;
+			visited_node->cost_so_far = INFINITY;
+			visited_node->local_goal = INFINITY;
+			visited_node->global_goal = INFINITY;
+			visited_node->g = INFINITY;
+			visited_node->f = INFINITY;
+			visited_node->came_from = nullptr;
 		}
-
-		//Node* start = this->path.at(this->path.size() - 1);
-		//Node* target = this->path.at(0);
 
 		this->start_node->setType("start");
 		this->target_node->setType("target");
 
-		this->playing = false;
-		this->paused = false;
-		this->target_found = false;
+		this->complete = false;
+		this->last_node_changed = nullptr;
+		this->last_node = nullptr;
 	}
+	else if (this->complete && !this->cost_mode) {
+		for (Node* path_node : this->path) {
+			if (path_node->getType() == "visited") {
+				if (path_node == this->start_node) {
+					path_node->setType("start");
+				}
+				else if (path_node == this->target_node) {
+					path_node->setType("target");
+				}
+				else {
+					path_node->setType("passable");
+				}
+			}
+		}
+
+		this->complete = false;
+		this->last_node_changed = nullptr;
+		this->last_node = nullptr;
+	}
+
+	
 }
 
 std::vector<Node*> Engine::getNeighbors(Node* node) {
