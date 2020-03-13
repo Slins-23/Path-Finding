@@ -1,9 +1,4 @@
 #include "Engine.h"
-#include <iostream>
-#include <iterator>
-#include <numeric>
-#include <algorithm>
-#include <vector>
 #include <exception>
 
 Engine::Engine() {
@@ -211,11 +206,10 @@ void Engine::start() {
 	if (this->cost_mode) {
 		if (this->use_AStar) {
 			if (!was_paused) {
-				this->open.clear();
-
 				this->start_node->g = 0;
-				this->start_node->f = this->start_node->g + heuristic(this->start_node, this->target_node);
+				this->start_node->f = this->start_node->g + (heuristic(this->start_node, this->target_node) / ((this->start_node->getX() + this->start_node->getY()) / 2) );
 
+				this->open.clear();
 				this->open.push_back(this->start_node);
 			}
 
@@ -229,6 +223,7 @@ void Engine::start() {
 			if (!was_paused) {
 				this->start_node->cost_so_far = 0;
 				this->frontier_pq.clear();
+				
 				this->frontier_pq.insert(std::make_pair(0, this->start_node));
 			}
 
@@ -320,15 +315,6 @@ void Engine::computePathDijkstra() {
 			break;
 		}
 
-		currentNode->setType("visited");
-
-		if (currentNode->getType() == "target") {
-			currentNode->setColors("target");
-		}
-		else if (currentNode->getType() == "start") {
-			currentNode->setColors("start");
-		}
-
 		for (Node* neighbor : getNeighbors(currentNode)) {
 
 			if (neighbor->getType() != "impassable") {
@@ -397,18 +383,9 @@ void Engine::computePathAStar() {
 
 		this->open.pop_front();
 
-		current_node->setType("visited");
-
-		if (current_node->getType() == "target") {
-			current_node->setColors("target");
-		}
-		else if (current_node->getType() == "start") {
-			current_node->setColors("start");
-		}
-
 		for (Node* neighbor : getNeighbors(current_node)) {
 			if (neighbor->getType() != "impassable") {
-
+				
 				float g;
 
 				if (current_node->g != 0) {
@@ -889,28 +866,23 @@ void Engine::clearVisited() {
 
 		for (Node* path_node : this->path) {
 			if (this->cost_mode) {
-				double cost = path_node->cost;
+				float cost = path_node->cost;
 				path_node->setType("passable");
 				path_node->cost = cost;
+				path_node->came_from = nullptr;
+				path_node->g = INFINITY;
+				path_node->f = INFINITY;
 			}
 			else if (!this->cost_mode) {
 				path_node->setType("passable");
 			}
 		}
 
-		Node* starting_node = this->path.at(this->path.size() - 1);
-		Node* target_node = this->path.at(0);
+		//Node* start = this->path.at(this->path.size() - 1);
+		//Node* target = this->path.at(0);
 
-		starting_node->setType("start");
-		target_node->setType("target");
-
-		if (this->cost_mode) {
-			starting_node->cost = 1;
-			starting_node->cost_so_far = INFINITY;
-
-			target_node->cost = 1;
-			target_node->cost_so_far = INFINITY;
-		}
+		this->start_node->setType("start");
+		this->target_node->setType("target");
 
 		this->playing = false;
 		this->paused = false;
