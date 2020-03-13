@@ -684,12 +684,26 @@ void Engine::toggleViewOnly() {
 void Engine::toggleTargetMode() {
 	if (!this->view_only) {
 		this->pick_target = !this->pick_target;
+
+		if (this->pick_target) {
+			this->current_node->setColors("target");
+		}
+		else if (!this->pick_target) {
+			this->current_node->setColors(this->current_node->getType() == "passable" ? "impassable" : "passable");
+		}
 	}
 }
 
 void Engine::toggleStartMode() {
 	if (!this->view_only) {
 		this->pick_start = !this->pick_start;
+	}
+
+	if (this->pick_start) {
+		this->current_node->setColors("start");
+	}
+	else if (!this->pick_start) {
+		this->current_node->setColors(this->current_node->getType() == "passable" ? "impassable" : "passable");
 	}
 }
 
