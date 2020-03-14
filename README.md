@@ -5,17 +5,6 @@ The colors, of type "Uint8", can be in the ranges 0-255 and 0x00-0xFF.
 For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
 
 **This is a work-in-progress project. There are going to be many changes in the upcoming week(s).**<br>
-# Screenshots
-
-The following screenshots show the program running. <br>
-The algorithms used were, respectively: Breadth-First Search, Greedy Best-First Search, Dijkstra's and A-Star. <br>
-
-Finding Path | Path Found |
-:-----------:|:----------:
-![Breadth-First Search (Finding path)](https://i.imgur.com/LP8Af18.png) | ![Breadth-First Search (Path found)](https://i.imgur.com/C6IegUQ.png)
-![Greedy Best-First Search (Finding path)](https://i.imgur.com/DVo4P9j.png) | ![Greedy Best-First Search (Path found)](https://i.imgur.com/9RpnKtV.png)
-![Dijkstra's Algorithm (Finding path)](https://i.imgur.com/8yipGwO.png) | ![Dijkstra's Algorithm (Path found)](https://i.imgur.com/45K1bcw.png)
-![A-Star (Finding path)](https://i.imgur.com/PmNQXLn.png) | ![A-Star (Path found)](https://i.imgur.com/EOXDWSi.png)
 
 # Usage
 
@@ -63,6 +52,18 @@ If on cost mode, toggles between Dijkstra's algorithm and A-Star. <br>
 | K | After the path was found, pressing this key converts the tiles in the path from "visited" to "passable". Used for better visualization. |
 | V | Toggles view-only mode. |
 | J | Toggles algorithms for the current mode. |
+
+# Screenshots
+
+The following screenshots show the program running. <br>
+The algorithms used were, respectively: Breadth-First Search, Greedy Best-First Search, Dijkstra's and A-Star. <br>
+
+Finding Path | Path Found |
+:-----------:|:----------:
+![Breadth-First Search (Finding path)](https://i.imgur.com/LP8Af18.png) | ![Breadth-First Search (Path found)](https://i.imgur.com/C6IegUQ.png)
+![Greedy Best-First Search (Finding path)](https://i.imgur.com/DVo4P9j.png) | ![Greedy Best-First Search (Path found)](https://i.imgur.com/9RpnKtV.png)
+![Dijkstra's Algorithm (Finding path)](https://i.imgur.com/8yipGwO.png) | ![Dijkstra's Algorithm (Path found)](https://i.imgur.com/45K1bcw.png)
+![A-Star (Finding path)](https://i.imgur.com/PmNQXLn.png) | ![A-Star (Path found)](https://i.imgur.com/EOXDWSi.png)
 
 # Compilation
 Compiled in Visual Studio Community 2019, in C++. Using SDL2 and SDL_ttf as external libraries. Release version not tested.
