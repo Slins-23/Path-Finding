@@ -1,7 +1,7 @@
 # Screenshots
 
-The following screenshots show the program running.
-The algorithms used were, respectively: Breadth-First Search, Greedy Best-First Search, Dijkstra's and A-Star.
+The following screenshots show the program running. <br>
+The algorithms used were, respectively: Breadth-First Search, Greedy Best-First Search, Dijkstra's and A-Star. <br>
 
 Finding Path | Path Found |
 :-----------:|:----------:
