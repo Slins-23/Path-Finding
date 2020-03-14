@@ -1,3 +1,15 @@
+# Screenshots
+
+The following screenshots show the program running.
+The algorithms used were, respectively: Breadth-First Search, Greedy Best-First Search, Dijkstra's and A-Star.
+
+Finding Path | Path Found |
+:-----------:|:----------:
+![Breadth-First Search (Finding path)](https://i.imgur.com/LP8Af18.png) | ![Breadth-First Search (Path found)](https://i.imgur.com/C6IegUQ.png)
+![Greedy Best-First Search (Finding path)](https://i.imgur.com/DVo4P9j.png) | ![Greedy Best-First Search (Path found)](https://i.imgur.com/9RpnKtV.png)
+![Dijkstra's Algorithm (Finding path)](https://i.imgur.com/8yipGwO.png) | ![Dijkstra's Algorithm (Path found)](https://i.imgur.com/45K1bcw.png)
+![A-Star (Finding path)](https://i.imgur.com/PmNQXLn.png) | ![A-Star (Path found)](https://i.imgur.com/EOXDWSi.png)
+
 # Info
 You can change the color of the tiles at the "Node.h" file, in the "colors" struct.
 The colors, of type "Uint8", can be in the ranges 0-255 and 0x00-0xFF.
