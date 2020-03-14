@@ -1,9 +1,9 @@
+#pragma once
 #include "Node.h"
 #include <vector>
 #include <queue>
 #include <list>
 
-#pragma once
 class Engine
 {
 private:
@@ -45,8 +45,8 @@ private:
 	void computePathDijkstra(); // Dijkstra's algorithm.
 	void computePathAStar(); // A* algorithm.
 	void resolvePath(); // Finds the path, starting from ther target Node.	
-	void drawGrid();
-	void resetGrid();
+	void drawGrid(); // Draws the Node grid.
+	void resetGrid(); // Resets the Node grid.
 	float heuristic(Node* a, Node* b); // Heuristic function.
 
 
@@ -98,21 +98,21 @@ public:
 	int close(); // Closes the environment.
 	void reset(); // Resets the grid.
 	void changeAlgorithm(); // Changes the algorithm.
-	void toggleCostMode();
-	void toggleViewOnly();
-	void toggleTargetMode();
-	void toggleStartMode();
-	void handleMouse(bool button_down, int button_pressed);
-	void handleMouseClick();
-	void updateMousePosition();
+	void toggleCostMode(); // Toggle cost mode.
+	void toggleViewOnly(); // Toggle view-only.
+	void toggleTargetMode(); // Toggle target selection mode.
+	void toggleStartMode(); // Toggle start selection mode.
+	void handleMouse(bool button_down, int button_pressed); // Handle mouse button down and up events.
+	void handleMouseClick(); // Handle mouse button clicked.
+	void updateMousePosition(); // Updates the mouse position.
 
 	// Validation
-	bool isNodeValid(int width, int height);
-	bool isValidMousePosition();
-	bool isValidLeftNeighbor(int index);
-	bool isValidTopNeighbor(int index);
-	bool isValidRightNeighbor(int index);
-	bool isValidBottomNeighbor(int index);
+	bool isNodeValid(int width, int height); // Checks if the Node is within an accessible index in the array containing all Nodes.
+	bool isValidMousePosition(); // Checks if the current mouse position has any invalid values.
+	bool isValidLeftNeighbor(int index); // Check if there's room in the grid for a left neighbor.
+	bool isValidTopNeighbor(int index); // Check if there's room in the grid for a top neighbor.
+	bool isValidRightNeighbor(int index); // Check if there's room in the grid for a right neighbor.
+	bool isValidBottomNeighbor(int index); // Check if there's room in the grid for a bottom neighbor.
 
 	// SDL
 	void updateGrid(); // Updates the grid.

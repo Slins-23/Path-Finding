@@ -301,7 +301,6 @@ void Engine::computePathDijkstra() {
 				}
 				break;
 			}
-
 		}
 
 		if (this->paused) {
@@ -595,7 +594,7 @@ void Engine::computePathGBFS() {
 
 			done_nodes.push_back(current_node);
 		}
-	
+
 	}
 }
 
@@ -908,7 +907,7 @@ void Engine::clearVisited() {
 		this->last_node = nullptr;
 	}
 
-	
+	this->target_found = false;
 }
 
 bool Engine::isNodeValid(int width, int height) {

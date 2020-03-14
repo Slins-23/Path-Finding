@@ -26,24 +26,30 @@ int main(int argc, char* argv[]) {
 					engine.close();
 					return 1;
 
-				// Everytime the mouse is moved, update the mouse position and get the current Node index. Change Node color once mouse is over it to the current Node type.
+				// Everytime the mouse is moved, update the mouse position.
 				case SDL_MOUSEMOTION:
 					engine.updateMousePosition();
 					break;
+
+				// Handle mouse butto down
 				case SDL_MOUSEBUTTONDOWN:
 					engine.handleMouse(true, event.button.button);
 					break;
+
+				// Handle mouse button up
 				case SDL_MOUSEBUTTONUP:
 					engine.handleMouse(false, NULL);
 					break;
+
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.scancode) {
 
-					// If in cost mode, toggle the path finding algorithm between A* and Dijkstra's.
+					// Change the current mode's algorithm. Toggle between A* and Dijkstra's when in cost mode, Greedy Best-First Search and Breadth-First Search in default mode.
 					case SDL_SCANCODE_J: 
 						engine.changeAlgorithm();
 						break;
 
+					// Clears all the visited Nodes (makes them passable/green) for better visualization.
 					case SDL_SCANCODE_K:
 						engine.clearVisited();
 						break;

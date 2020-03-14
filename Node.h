@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <sstream>
 #include <SDL.h>
@@ -15,7 +16,6 @@ struct colors {
 };
 
 // Node struct. All Nodes are instances of this struct.
-#pragma once
 struct Node
 {
 	Node(const char* type, int x, int y); // The Node constructor takes in the type of the Node and, respectively, the X and Y coordinates, relative to the display.
@@ -26,7 +26,7 @@ struct Node
 	int y; // Node Y position within the window.
 	int width = 40; // Node's width.
 	int height = 40; // Node's height.
-	int index = 12345; // Node's index.
+	int index; // Node's index.
 
 	// Uint8
 	Uint8 red; // Node's red color.
@@ -41,10 +41,10 @@ struct Node
 	Node* came_from = nullptr; // Node from which this Node came from.
 
 	// Floats
-	int cost = 1; // Node's cost value / How long it takes to pass through this Node
-	float h = INFINITY;
-	float g = INFINITY;
-	float f = INFINITY;
+	int cost = 1; // Node's cost value. (How long it takes to pass through this Node)
+	float h = INFINITY; // Node's heuristic value. Calculated with the "heuristic" method in the Engine class.
+	float g = INFINITY; // The cost from the start Node to this Node.
+	float f = INFINITY; // g + h
 
 	const char* getType(); // Returns the Node's type. ("passable" || "impassable" || "start" || "target" || "visited")
 
