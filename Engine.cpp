@@ -117,8 +117,6 @@ void Engine::drawNode(Node* node) {
 
 		std::string str = std::to_string(node->cost);
 
-		str = str[0];
-
 		SDL_Surface* surface = TTF_RenderText_Solid(this->cost_font, str.c_str(), color);
 
 		SDL_Texture* txt = SDL_CreateTextureFromSurface(this->renderer, surface);
@@ -131,7 +129,7 @@ void Engine::drawNode(Node* node) {
 		SDL_Rect txtRect;
 
 		if (node->cost >= 10) {
-			txtRect = { node->x + (w / 6), node->y + (h / 8), w, h };
+			txtRect = { node->x + (w / 6), node->y + (h / 8), w, h};
 		}
 		else if (node->cost < 10) {
 			txtRect = { node->x + (int)(w / 1.25), node->y + (h / 8), w, h };
@@ -211,7 +209,7 @@ void Engine::start() {
 		if (this->use_AStar) {
 			if (!was_paused) {
 				this->start_node->g = 0;
-				this->start_node->f = this->start_node->g + heuristic(this->start_node, this->target_node);
+				this->start_node->f = this->start_node->g + (heuristic(this->start_node, this->target_node) / ((this->start_node->width + this->start_node->height) / 2));
 
 				this->visited_nodes.clear();
 				this->open.clear();
@@ -286,7 +284,7 @@ void Engine::start() {
 }
 
 float Engine::heuristic(Node* a, Node* b) {
-	return sqrtf((a->x - b->x) * (a->x - b->x) + (a->y - b->y) * (a->y - b->y));
+	return abs(a->x - b->x) + abs(a->y - b->y);
 }
 
 void Engine::computePathDijkstra() {
@@ -327,13 +325,14 @@ void Engine::computePathDijkstra() {
 				double costN = neighbor->cost;
 				double distance = cost + costN;
 
-				if (distance < neighbor->cost_so_far) {
-					this->frontier_pq.erase(std::make_pair(neighbor->cost_so_far, neighbor));
+				if (distance < neighbor->g) {
+					this->frontier_pq.erase(std::make_pair(neighbor->g, neighbor));
 
-					neighbor->cost_so_far = distance;
+
+					neighbor->g = distance;
 					neighbor->came_from = currentNode;
 
-					this->frontier_pq.insert(std::make_pair(neighbor->cost_so_far, neighbor));
+					this->frontier_pq.insert(std::make_pair(neighbor->g, neighbor));
 				}
 
 				if (neighbor->getType() != "visited") {
@@ -405,7 +404,9 @@ void Engine::computePathAStar() {
 					int node_width = neighbor->width;
 					int node_height = neighbor->height;
 
-					neighbor->f = neighbor->g + (heuristic(neighbor, this->target_node) / ((node_width + node_height) / 2));
+					neighbor->h = (heuristic(neighbor, this->target_node) / ((node_width + node_height) / 2));
+
+					neighbor->f = neighbor->g + neighbor->h;
 
 					bool in_open_set = false;
 
@@ -446,7 +447,7 @@ void Engine::computePathAStar() {
 }
 
 void Engine::computePathBFS() {
-	std::vector<Node*> doneNodes;
+	std::vector<Node*> done_nodes;
 
 	while (!this->frontier.empty()) {
 
@@ -471,15 +472,14 @@ void Engine::computePathBFS() {
 		bool found = false;
 		bool shouldContinue = false;
 
-		Node* currentNode = this->frontier.front();
+		Node* current_node = this->frontier.front();
 
-		for (Node* node : doneNodes) {
-			//if (node == currentNode || node == this->targetNode) {
+		for (Node* node : done_nodes) {
 			if (node == this->target_node) {
 				found = true;
 				break;
 			}
-			else if (node == currentNode) {
+			else if (node == current_node) {
 				shouldContinue = true;
 				break;
 			}
@@ -490,7 +490,7 @@ void Engine::computePathBFS() {
 		}
 
 		if (!found) {
-			for (Node* neighbor : getNeighbors(currentNode)) {
+			for (Node* neighbor : getNeighbors(current_node)) {
 
 				if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
 
@@ -502,7 +502,7 @@ void Engine::computePathBFS() {
 						neighbor->setType("visited");
 					}
 
-					neighbor->came_from = currentNode;
+					neighbor->came_from = current_node;
 					this->frontier.push(neighbor);
 					clearWindow();
 					updateGrid();
@@ -510,7 +510,7 @@ void Engine::computePathBFS() {
 				}
 			}
 
-			doneNodes.push_back(currentNode);
+			done_nodes.push_back(current_node);
 		}
 
 		this->frontier.pop();
@@ -518,7 +518,7 @@ void Engine::computePathBFS() {
 }
 
 void Engine::computePathGBFS() {
-	std::vector<Node*> doneNodes;
+	std::vector<Node*> done_nodes;
 
 	bool found = false;
 	bool shouldContinue = false;
@@ -543,16 +543,15 @@ void Engine::computePathGBFS() {
 			break;
 		}
 
-		Node* currentNode = this->frontier_gbfs.begin()->second;
+		Node* current_node = this->frontier_gbfs.begin()->second;
 		this->frontier_gbfs.erase(this->frontier_gbfs.begin());
 
-		for (Node* node : doneNodes) {
-			//if (node == currentNode || node == this->targetNode) {
+		for (Node* node : done_nodes) {
 			if (node == this->target_node) {
 				found = true;
 				break;
 			}
-			else if (node == currentNode) {
+			else if (node == current_node) {
 				shouldContinue = true;
 				break;
 			}
@@ -565,7 +564,7 @@ void Engine::computePathGBFS() {
 		}
 
 		if (!found) {
-			for (Node* neighbor : getNeighbors(currentNode)) {
+			for (Node* neighbor : getNeighbors(current_node)) {
 
 				if (neighbor->getType() != "impassable" && neighbor->getType() != "visited") {
 
@@ -581,18 +580,20 @@ void Engine::computePathGBFS() {
 						neighbor->setType("visited");
 					}
 
-					neighbor->came_from = currentNode;
+					neighbor->came_from = current_node;
 
-					double h = heuristic(this->target_node, neighbor);
+					float h = heuristic(this->target_node, neighbor) / 40;
 
-					this->frontier_gbfs.insert(std::make_pair(h, neighbor));
+					neighbor->h = h;
+
+					this->frontier_gbfs.insert(std::make_pair(neighbor->h, neighbor));
 					clearWindow();
 					updateGrid();
 					updateRenderer();
 				}
 			}
 
-			doneNodes.push_back(currentNode);
+			done_nodes.push_back(current_node);
 		}
 	
 	}

@@ -35,12 +35,9 @@ private:
 
 	// Priority Queues
 	std::queue<Node*> frontier; // Nodes queue for Breadth-First Search.
-	std::set<std::pair<double, Node*>> frontier_pq; // Nodes priority queue for Dijkstra's algorithm.
-	std::set<std::pair<int, Node*>> frontier_gbfs; // Nodes priority queue for Greedy Best-First Search.
-	std::set<std::pair<double, Node*>> AStar_list;
-	//std::list<Node*> AStar_list; // Nodes priority queue for A*.
-
-	std::list<Node*> open;
+	std::set<std::pair<float, Node*>> frontier_gbfs; // Nodes priority queue for Greedy Best-First Search.
+	std::set<std::pair<float, Node*>> frontier_pq; // Nodes priority queue for Dijkstra's algorithm.
+	std::list<Node*> open; // List of open Nodes for the A-Star algorithm.
 
 	// Algorithms
 	void computePathBFS(); // Breadth-First Search algorithm.
@@ -121,7 +118,7 @@ public:
 	void updateGrid(); // Updates the grid.
 	void updateRenderer(); // Updates the renderer.
 	void clearWindow(); // Clears the window.
-	void clearVisited();
+	void clearVisited(); // Clears visited nodes.
 
 	// Getters
 	SDL_Event getEvent();

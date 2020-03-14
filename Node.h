@@ -41,11 +41,8 @@ struct Node
 	Node* came_from = nullptr; // Node from which this Node came from.
 
 	// Floats
-	float cost = 1; // Node's cost value / How long it takes to pass through this Node
-	float cost_so_far = INFINITY; // Cost from the starting point to this Node.
-	float local_goal = INFINITY; // Should be cost
-	float global_goal = INFINITY; // Should be cost_so_far
-	float h;
+	int cost = 1; // Node's cost value / How long it takes to pass through this Node
+	float h = INFINITY;
 	float g = INFINITY;
 	float f = INFINITY;
 
@@ -54,17 +51,4 @@ struct Node
 	// Setters
 	void setType(const char* type); // Sets the Node's type. Argument should be ("passable" || "impassable" || "start" || "target" || "visited").
 	void setColors(const char* type); // Sets the Node's color to the specified type, but don't change the Node's type itself. Argument should be ("passable" || "impassable" || "start" || "target" || "visited").
-
-	// Overloaded operators
-	bool operator <(const Node& other) const {
-		return this->cost_so_far < other.cost_so_far;
-	}
-
-	bool operator >(const Node& other) const {
-		return this->cost_so_far > other.cost_so_far;
-	}
-
-	bool operator ==(const Node& other) const {
-		return this->cost_so_far == other.cost_so_far;
-	}
 };
