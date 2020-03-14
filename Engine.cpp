@@ -98,13 +98,13 @@ void Engine::updateRenderer() {
 }
 
 void Engine::drawNode(Node* node) {
-	SDL_SetRenderDrawColor(this->renderer, node->getRed(), node->getGreen(), node->getBlue(), node->getAlpha());
+	SDL_SetRenderDrawColor(this->renderer, node->red, node->green, node->blue, node->alpha);
 
 	SDL_Rect rect;
-	rect.x = node->getX();
-	rect.y = node->getY();
-	rect.w = node->getWidth();
-	rect.h = node->getHeight();
+	rect.x = node->x;
+	rect.y = node->y;
+	rect.w = node->width;
+	rect.h = node->height;
 
 	SDL_RenderFillRect(this->renderer, &rect);
 
@@ -131,10 +131,10 @@ void Engine::drawNode(Node* node) {
 		SDL_Rect txtRect;
 
 		if (node->cost >= 10) {
-			txtRect = { node->getX() + (w / 6), node->getY() + (h / 8), w, h };
+			txtRect = { node->x + (w / 6), node->y + (h / 8), w, h };
 		}
 		else if (node->cost < 10) {
-			txtRect = { node->getX() + (int)(w / 1.25), node->getY() + (h / 8), w, h };
+			txtRect = { node->x + (int)(w / 1.25), node->y + (h / 8), w, h };
 		}
 
 		SDL_RenderCopy(this->renderer, txt, NULL, &txtRect);
@@ -286,8 +286,8 @@ void Engine::start() {
 }
 
 float Engine::heuristic(Node* a, Node* b) {
-	//return abs(a->getX() - b->getX()) + abs(a->getY() - b->getY());
-	return sqrtf((a->getX() - b->getX()) * (a->getX() - b->getX()) + (a->getY() - b->getY()) * (a->getY() - b->getY()));
+	//return abs(a->x - b->x) + abs(a->y - b->y);
+	return sqrtf((a->x - b->x) * (a->x - b->x) + (a->y - b->y) * (a->y - b->y));
 }
 
 void Engine::computePathDijkstra() {
@@ -403,8 +403,8 @@ void Engine::computePathAStar() {
 					neighbor->came_from = current_node;
 					neighbor->g = g;
 
-					int node_width = neighbor->getWidth();
-					int node_height = neighbor->getHeight();
+					int node_width = neighbor->width;
+					int node_height = neighbor->height;
 
 					neighbor->f = neighbor->g + (heuristic(neighbor, this->target_node) / ((node_width + node_height) / 2));
 
@@ -918,25 +918,61 @@ void Engine::clearVisited() {
 	
 }
 
+bool Engine::isValidLeftNeighbor(int index) {
+	if (index % (this->nodes_per_row_IDX + 1) != 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool Engine::isValidTopNeighbor(int index) {
+	if (index > this->nodes_per_row_IDX) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool Engine::isValidRightNeighbor(int index) {
+	if (index % (this->nodes_per_row_IDX + 1) != 19) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool Engine::isValidBottomNeighbor(int index) {
+	if (index <= this->node_count_IDX - this->nodes_per_row_IDX - 1) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 std::vector<Node*> Engine::getNeighbors(Node* node) {
 	std::vector<Node*> neighbors;
 
-	if (node->index % (this->nodes_per_row_IDX + 1) != 0) {
+	if (isValidLeftNeighbor(node->index)) {
 		Node* left_neighbor = this->nodes.at(node->index - 1);
 		neighbors.push_back(left_neighbor);
 	}
 
-	if (node->index > this->nodes_per_row_IDX) {
+	if (isValidTopNeighbor(node->index)) {
 		Node* top_neighbor = this->nodes.at(node->index - (this->nodes_per_row_IDX + 1));
 		neighbors.push_back(top_neighbor);
 	}
 
-	if (!(node->index % (this->nodes_per_row_IDX + 1) == 19)) {
+	if (isValidRightNeighbor(node->index)) {
 		Node* right_neighbor = this->nodes.at(node->index + 1);
 		neighbors.push_back(right_neighbor);
 	}
 
-	if (node->index <= this->node_count_IDX - this->nodes_per_row_IDX - 1) {
+	if (isValidBottomNeighbor(node->index)) {
 		Node* bottom_neighbor = this->nodes.at(node->index + this->nodes_per_row_IDX + 1);
 		neighbors.push_back(bottom_neighbor);
 	}

@@ -109,14 +109,20 @@ public:
 	void handleMouseClick();
 	void updateMousePosition();
 
-	// Getters
-	SDL_Event getEvent();
-	int getWidth();
-	int getHeight();
+	// Validation
+	bool isValidLeftNeighbor(int index);
+	bool isValidTopNeighbor(int index);
+	bool isValidRightNeighbor(int index);
+	bool isValidBottomNeighbor(int index);
 
 	// SDL
 	void updateGrid(); // Updates the grid.
 	void updateRenderer(); // Updates the renderer.
 	void clearWindow(); // Clears the window.
 	void clearVisited();
+
+	// Getters
+	SDL_Event getEvent();
+	int getWidth();
+	int getHeight();
 };
