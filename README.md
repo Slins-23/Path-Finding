@@ -5,8 +5,6 @@ The colors, of type "Uint8", can be in the ranges 0-255 and 0x00-0xFF.
 For each Uint8 array, the colors are, respectively: Red, Green, Blue, Alpha.
 
 **This is a work-in-progress project. There are going to be many changes in the upcoming week(s).**<br>
-**There's a lot of redundant code, performance issues, lack of comments, documentation, and more. Those will soon be fixed/improved.**
-
 # Screenshots
 
 The following screenshots show the program running. <br>
