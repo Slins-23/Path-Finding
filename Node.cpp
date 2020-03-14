@@ -19,7 +19,8 @@ void Node::setType(const char* type) {
 
 	if (type == "passable") {
 		this->cost = 1;
-		this->cost_so_far = INFINITY;
+		this->g = INFINITY;
+		this->f = INFINITY;
 		this->red = colors::passable[0];
 		this->green = colors::passable[1];
 		this->blue = colors::passable[2];
@@ -27,7 +28,6 @@ void Node::setType(const char* type) {
 	}
 	else if (type == "impassable") {
 		this->cost = 5;
-		this->cost_so_far = INFINITY;
 		this->red = colors::impassable[0];
 		this->green = colors::impassable[1];
 		this->blue = colors::impassable[2];
@@ -52,8 +52,8 @@ void Node::setType(const char* type) {
 		this->alpha = colors::visited[3];
 	}
 	else {
-		//std::cout << "Set type error" << std::endl;
-		throw "Set type error";
+		std::cout << "Set type error" << std::endl;
+		throw;
 		this->red = 0x00;
 		this->green = 0x00;
 		this->red = 0x00;

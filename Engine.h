@@ -8,7 +8,7 @@ class Engine
 {
 private:
 	// Environment
-	void updateCost();
+	void updateCost(); // Updates the cost for the current Node.
 
 	// SDL
 	SDL_Window* window; // Window pointer.
@@ -23,20 +23,20 @@ private:
 
 	// Nodes
 	Node* last_node_changed = nullptr; // Last Node refered to when the mouse focus changes to another Node.
-	Node* start_node = nullptr;
-	Node* target_node = nullptr;
+	Node* start_node = nullptr; // Node set as the starting point.
+	Node* target_node = nullptr; // Node set as the target.
 	Node* last_node = nullptr; // Last hovered over Node's index.
 	Node* current_node = nullptr; // Currently hovered over Node's index.
 
 	// Arrays
 	std::vector<Node*> nodes; // All nodes are stored in this array.
 	std::vector<Node*> path; // The path indexes gets stored in this array once it's found.
-	std::vector<Node*> visited_nodes;
+	std::vector<Node*> visited_nodes; // All nodes that were visited by the algorihtm.
 
 	// Priority Queues
 	std::queue<Node*> frontier; // Nodes queue for Breadth-First Search.
 	std::set<std::pair<float, Node*>> frontier_gbfs; // Nodes priority queue for Greedy Best-First Search.
-	std::set<std::pair<float, Node*>> frontier_pq; // Nodes priority queue for Dijkstra's algorithm.
+	std::set<std::pair<float, Node*>> frontier_dijk; // Nodes priority queue for Dijkstra's algorithm.
 	std::list<Node*> open; // List of open Nodes for the A-Star algorithm.
 
 	// Algorithms

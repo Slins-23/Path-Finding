@@ -224,16 +224,16 @@ void Engine::start() {
 		}
 		else if (!this->use_AStar) {
 			if (!was_paused) {
-				this->start_node->cost_so_far = 0;
+				this->start_node->g = 0;
 
 				this->visited_nodes.clear();
-				this->frontier_pq.clear();
-				this->frontier_pq.insert(std::make_pair(0, this->start_node));
+				this->frontier_dijk.clear();
+				this->frontier_dijk.insert(std::make_pair(0, this->start_node));
 			}
 
 			computePathDijkstra();
 
-			if (((this->frontier_pq.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
+			if (((this->frontier_dijk.empty() && this->target_node != nullptr) || this->target_found) && !this->paused) {
 				resolvePath();
 			}
 		}
@@ -288,7 +288,7 @@ float Engine::heuristic(Node* a, Node* b) {
 }
 
 void Engine::computePathDijkstra() {
-	while (!this->frontier_pq.empty()) {
+	while (!this->frontier_dijk.empty()) {
 
 		while (SDL_PollEvent(&this->event)) {
 			switch (event.type) {
@@ -308,9 +308,9 @@ void Engine::computePathDijkstra() {
 			break;
 		}
 
-		float cost = this->frontier_pq.begin()->first;
-		Node* currentNode = this->frontier_pq.begin()->second;
-		this->frontier_pq.erase(this->frontier_pq.begin());
+		float cost = this->frontier_dijk.begin()->first;
+		Node* currentNode = this->frontier_dijk.begin()->second;
+		this->frontier_dijk.erase(this->frontier_dijk.begin());
 
 
 		if (currentNode == this->target_node) {
@@ -326,13 +326,13 @@ void Engine::computePathDijkstra() {
 				double distance = cost + costN;
 
 				if (distance < neighbor->g) {
-					this->frontier_pq.erase(std::make_pair(neighbor->g, neighbor));
+					this->frontier_dijk.erase(std::make_pair(neighbor->g, neighbor));
 
 
 					neighbor->g = distance;
 					neighbor->came_from = currentNode;
 
-					this->frontier_pq.insert(std::make_pair(neighbor->g, neighbor));
+					this->frontier_dijk.insert(std::make_pair(neighbor->g, neighbor));
 				}
 
 				if (neighbor->getType() != "visited") {
@@ -879,12 +879,6 @@ void Engine::clearVisited() {
 			float cost = visited_node->cost;
 			visited_node->setType("passable");
 			visited_node->cost = cost;
-			visited_node->cost_so_far = INFINITY;
-			visited_node->local_goal = INFINITY;
-			visited_node->global_goal = INFINITY;
-			visited_node->g = INFINITY;
-			visited_node->f = INFINITY;
-			visited_node->came_from = nullptr;
 		}
 
 		this->start_node->setType("start");
