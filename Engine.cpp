@@ -152,9 +152,9 @@ void Engine::updateGrid() {
 	drawGrid();
 }
 
-void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
+void Engine::handleNodes(int newX, int newY) {
 
-	if ((newY / 40 * this->WIN_W / 40) + newX / 40 < this->nodes.size()) {
+	if (isNodeValid(40, 40)) {
 		this->current_node = this->nodes.at((newY / 40 * this->WIN_W / 40) + newX / 40);
 	}
 
@@ -165,7 +165,7 @@ void Engine::handleNodes(int mouseX, int mouseY, int newX, int newY) {
 	else if (this->last_node != nullptr) {
 
 		if (this->last_node != this->current_node) {
-			if (newX >= 0 && newY >= 0 && newX < this->WIN_W && newY < this->WIN_H) {
+			if (isValidMousePosition()) {
 
 				if (!this->pick_start && !this->pick_target) {
 
@@ -286,7 +286,6 @@ void Engine::start() {
 }
 
 float Engine::heuristic(Node* a, Node* b) {
-	//return abs(a->x - b->x) + abs(a->y - b->y);
 	return sqrtf((a->x - b->x) * (a->x - b->x) + (a->y - b->y) * (a->y - b->y));
 }
 
@@ -716,7 +715,6 @@ void Engine::reset() {
 	this->start_node = nullptr;
 	this->target_node = nullptr;
 	this->last_node = nullptr;
-	this->current_node = nullptr;
 
 	resetGrid();
 	drawGrid();
@@ -772,7 +770,7 @@ void Engine::updateMousePosition() {
 		this->newX = this->mouseX - this->xPos - 1; // Updates newX with the mouse X position within the window. (With 0 being the leftmost points of the window).
 		this->newY = this->mouseY - this->yPos - 1; // Updates newY with the mouse Y position within the window. (With 0 being the topmost points of the window).
 
-		handleNodes(this->mouseX, this->mouseY, this->newX, this->newY); // Handles node colors and states when they're hovered over.
+		handleNodes(this->newX, this->newY); // Handles node colors and states when they're hovered over.
 	}
 }
 
@@ -918,40 +916,28 @@ void Engine::clearVisited() {
 	
 }
 
+bool Engine::isNodeValid(int width, int height) {
+	return (newY / height * this->WIN_W / width) + newX / width < this->nodes.size();
+}
+
+bool Engine::isValidMousePosition() {
+	return (newX >= 0 && newY >= 0 && newX < this->WIN_W && newY < this->WIN_H);
+}
+
 bool Engine::isValidLeftNeighbor(int index) {
-	if (index % (this->nodes_per_row_IDX + 1) != 0) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	return (index % (this->nodes_per_row_IDX + 1) != 0);
 }
 
 bool Engine::isValidTopNeighbor(int index) {
-	if (index > this->nodes_per_row_IDX) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	return (index > this->nodes_per_row_IDX);
 }
 
 bool Engine::isValidRightNeighbor(int index) {
-	if (index % (this->nodes_per_row_IDX + 1) != 19) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	return (index % (this->nodes_per_row_IDX + 1) != 19);
 }
 
 bool Engine::isValidBottomNeighbor(int index) {
-	if (index <= this->node_count_IDX - this->nodes_per_row_IDX - 1) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	return (index <= this->node_count_IDX - this->nodes_per_row_IDX - 1);
 }
 
 std::vector<Node*> Engine::getNeighbors(Node* node) {

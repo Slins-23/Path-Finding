@@ -14,7 +14,7 @@ private:
 	SDL_Window* window; // Window pointer.
 	SDL_Renderer* renderer; // Renderer pointer.
 	SDL_Event event; // Event variable.
-	void handleNodes(int mouseX, int mouseY, int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
+	void handleNodes(int newX, int newY); // Handles the Node in the given position, and a previous one if necessary.
 	void drawPath(); // Draws the path found from the above function.
 	void drawNode(Node* node); // Draws the Node passed as an argument.
 
@@ -110,6 +110,8 @@ public:
 	void updateMousePosition();
 
 	// Validation
+	bool isNodeValid(int width, int height);
+	bool isValidMousePosition();
 	bool isValidLeftNeighbor(int index);
 	bool isValidTopNeighbor(int index);
 	bool isValidRightNeighbor(int index);
